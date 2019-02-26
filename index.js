@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 const path = require('path');
 const { spawn } = require('child_process');
 const argv = require('yargs-parser')(process.argv.slice(2));
@@ -7,9 +9,11 @@ let executable = importFrom.silent(path.resolve('.'), 'electron');
 
 module.exports = () => {
   let server;
-  const hook = path.resolve(__dirname, 'src/hook.js');
 
-  server = spawn(executable, [ `--require=${hook}` ].concat(argv._ || []), {
+  const hook = path.resolve(__dirname, 'src/hook.js');
+  const args = ['--require', hook ].concat(argv._ || []);
+
+  server = spawn(executable, args, {
     stdio: ['ignore', 'inherit', 'inherit'],
     windowsHide: false
   });
