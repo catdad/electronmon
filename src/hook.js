@@ -21,6 +21,10 @@ function record(id) {
   paths.push(id);
 }
 
+// this is a hack and I don't like it
+// if you know a better way to collect all required modules
+// please file an issue, I'd appreciate it very much
+// https://github.com/catdad/electronmon/issues/new
 const originalLoad = Module._load;
 Module._load = function (request, parent) {
   if (parent) {
