@@ -4,7 +4,8 @@ const color = new chalk.constructor({ level: 1 });
 const levels = {
   verbose: 0,
   info: 1,
-  error: 2
+  error: 2,
+  quiet: 3
 };
 const logLevel = levels[process.env.ELECTRONMON_LOGLEVEL] || 1;
 
