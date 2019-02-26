@@ -20,6 +20,10 @@
     "node": ">=8.0.0"
   },
   "devDependencies": {
+    "electron": "^4.0.5",
     "eslint": "^5.14.1"
+  },
+  "dependencies": {
+    "yargs-parser": "^13.0.0"
   }
 }
