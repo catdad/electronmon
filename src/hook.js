@@ -5,6 +5,7 @@ const resolve = require('resolve-from');
 const chokidar = require('chokidar');
 const electron = require('electron');
 
+const log = require('./log.js');
 const signal = require('./signal.js');
 const root = path.resolve('.');
 const pathmap = {};
@@ -21,12 +22,12 @@ watcher.on('change', relpath => {
   const filepath = path.resolve('.', relpath);
 
   if (pathmap[filepath]) {
-    console.log('MAIN FILE CHANGE:', relpath);
+    log.info('main file changed:', relpath);
     electron.app.exit(signal);
     return;
   }
 
-  console.log('RENDERER FILE CHANGE:', relpath);
+  log.info('renderer file change:', relpath);
   for (const win of electron.BrowserWindow.getAllWindows()) {
     win.webContents.reloadIgnoringCache();
   }
@@ -47,6 +48,8 @@ function record(id) {
     // we are already watching this file, skip it
     return;
   }
+
+  log.verbose('found new main thread file:', id);
 
   pathmap[id] = true;
   watcher.add(id);
