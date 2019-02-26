@@ -19,18 +19,20 @@ function start() {
   return server;
 }
 
-module.exports = () => {
-  let server = start();
-
-  server.on('exit', code => {
+function watch(server) {
+  server.once('exit', code => {
     if (code === signal) {
       log.info('restarting app due to file change');
 
-      server = start();
+      watch(start());
       return;
     }
 
     log.info('app exited with code', code);
     log.info('waiting for a change to restart it');
   });
+}
+
+module.exports = () => {
+  watch(start());
 };
