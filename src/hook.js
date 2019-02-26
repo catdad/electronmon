@@ -2,9 +2,25 @@ const path = require('path');
 const Module = require('module');
 
 const resolve = require('resolve-from');
+const chokidar = require('chokidar');
+const electron = require('electron');
 
+const signal = require('./signal.js');
 const root = path.resolve('.');
-const paths = [];
+const pathmap = {};
+const watcher = chokidar.watch([], {
+  cwd: root,
+  ignored: [
+    /(^|[/\\])\../, // Dotfiles
+    'node_modules',
+    '**/*.map'
+  ]
+});
+
+watcher.on('change', filepath => {
+  console.log('FILE CHANGE:', filepath);
+  electron.app.exit(signal);
+});
 
 function record(id) {
   if (id.indexOf(root) !== 0) {
@@ -17,8 +33,12 @@ function record(id) {
     return;
   }
 
-  // anything left over is a local file, so watch this
-  paths.push(id);
+  if (pathmap[id]) {
+    // we are already watching this file, skip it
+    return;
+  }
+
+  watcher.add(id);
 }
 
 // this is a hack and I don't like it
@@ -37,5 +57,3 @@ Module._load = function (request, parent) {
 
   return originalLoad.apply(this, arguments);
 };
-
-setTimeout(() => console.log(paths), 5000);

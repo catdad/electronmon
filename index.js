@@ -5,25 +5,31 @@ const { spawn } = require('child_process');
 const argv = require('yargs-parser')(process.argv.slice(2));
 const importFrom = require('import-from');
 
-let executable = importFrom.silent(path.resolve('.'), 'electron');
+const executable = importFrom.silent(path.resolve('.'), 'electron');
+const signal = require('./src/signal.js');
 
-module.exports = () => {
-  let server;
-
+function start() {
   const hook = path.resolve(__dirname, 'src/hook.js');
   const args = ['--require', hook ].concat(argv._ || []);
 
-  server = spawn(executable, args, {
+  const server = spawn(executable, args, {
     stdio: ['ignore', 'inherit', 'inherit'],
     windowsHide: false
   });
 
-  server.on('exit', (code) => {
-    if (server) {
-      console.log('server exited with code', code);
-      console.log('waiting for a change to restart it');
+  return server;
+}
+
+module.exports = () => {
+  let server = start();
+
+  server.on('exit', code => {
+    if (code === signal) {
+      server = start();
+      return;
     }
 
-    server = null;
+    console.log('server exited with code', code);
+    console.log('waiting for a change to restart it');
   });
 };
