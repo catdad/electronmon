@@ -24,6 +24,7 @@
     "eslint": "^5.14.1"
   },
   "dependencies": {
+    "import-from": "^2.1.0",
     "yargs-parser": "^13.0.0"
   }
 }
