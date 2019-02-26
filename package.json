@@ -1,0 +1,25 @@
+{
+  "name": "electronmon",
+  "version": "0.0.1",
+  "description": "electronmon",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/catdad/electronmon.git"
+  },
+  "author": "Kiril Vatev <vatev.1@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/catdad/electronmon/issues"
+  },
+  "homepage": "https://github.com/catdad/electronmon#readme",
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.14.1"
+  }
+}
