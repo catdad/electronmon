@@ -8,7 +8,7 @@ const electron = require('electron');
 const signal = require('./signal.js');
 const root = path.resolve('.');
 const pathmap = {};
-const watcher = chokidar.watch([], {
+const watcher = chokidar.watch('.', {
   cwd: root,
   ignored: [
     /(^|[/\\])\../, // Dotfiles
@@ -17,9 +17,19 @@ const watcher = chokidar.watch([], {
   ]
 });
 
-watcher.on('change', filepath => {
-  console.log('FILE CHANGE:', filepath);
-  electron.app.exit(signal);
+watcher.on('change', relpath => {
+  const filepath = path.resolve('.', relpath);
+
+  if (pathmap[filepath]) {
+    console.log('MAIN FILE CHANGE:', relpath);
+    electron.app.exit(signal);
+    return;
+  }
+
+  console.log('RENDERER FILE CHANGE:', relpath);
+  for (const win of electron.BrowserWindow.getAllWindows()) {
+    win.webContents.reloadIgnoringCache();
+  }
 });
 
 function record(id) {
@@ -38,6 +48,7 @@ function record(id) {
     return;
   }
 
+  pathmap[id] = true;
   watcher.add(id);
 }
 
