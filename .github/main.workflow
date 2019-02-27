@@ -5,5 +5,5 @@ workflow "Build" {
 
 action "lint" {
   uses = "docker://node:10.15"
-  runs = "npm run cilint"
+  runs = ["sh",  "-c",  "npm run cilint"]
 }
