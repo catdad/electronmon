@@ -19,15 +19,16 @@ const watcher = chokidar.watch('.', {
 });
 
 watcher.on('change', relpath => {
+  const type = 'change';
   const filepath = path.resolve('.', relpath);
 
   if (pathmap[filepath]) {
-    log.info('main file changed:', relpath);
+    log.info(`main file ${type}:`, relpath);
     electron.app.exit(signal);
     return;
   }
 
-  log.info('renderer file change:', relpath);
+  log.info(`renderer file ${type}:`, relpath);
   for (const win of electron.BrowserWindow.getAllWindows()) {
     win.webContents.reloadIgnoringCache();
   }
