@@ -33,5 +33,25 @@
     "import-from": "^2.1.0",
     "runtime-required": "^1.0.0",
     "yargs-parser": "^13.0.0"
-  }
+  },
+  "keywords": [
+    "electron",
+    "reload",
+    "reloader",
+    "livereload",
+    "auto-reload",
+    "live-reload",
+    "refresh",
+    "restart",
+    "watch",
+    "watcher",
+    "watching",
+    "monitor",
+    "hot",
+    "files",
+    "fs",
+    "dev",
+    "development",
+    "node"
+  ]
 }
