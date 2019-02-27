@@ -2,7 +2,7 @@
   "name": "electronmon",
   "version": "0.0.2",
   "description": "electronmon",
-  "main": "index.js",
+  "main": "src/electronmon.js",
   "bin": {
     "electronmon": "./bin/cli.js"
   },

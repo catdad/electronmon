@@ -4,11 +4,11 @@ const argv = require('yargs-parser')(process.argv.slice(2));
 const importFrom = require('import-from');
 
 const executable = importFrom.silent(path.resolve('.'), 'electron');
-const log = require('./src/log.js');
-const signal = require('./src/signal.js');
+const log = require('./log.js');
+const signal = require('./signal.js');
 
 function start() {
-  const hook = path.resolve(__dirname, 'src/hook.js');
+  const hook = path.resolve(__dirname, 'hook.js');
   const args = ['--require', hook ].concat(argv._ || []);
 
   const server = spawn(executable, args, {
