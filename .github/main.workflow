@@ -1,9 +1,15 @@
 workflow "Build" {
   on = "push"
-  resolves = ["lint"]
+  resolves = ["Lint"]
 }
 
-action "lint" {
-  uses = "docker://node:10.15"
-  runs = ["sh",  "-c",  "npm run cilint"]
+action "Install" {
+  uses = "actions/npm@master"
+  args = "install"
+}
+
+action "Lint" {
+  needs = "Install"
+  uses = "actions/npm@master"
+  args = "lint"
 }
