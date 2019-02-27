@@ -12,11 +12,11 @@ Watch and reload your electron app the easy way!
 [dm-david.svg]: https://david-dm.org/catdad/electronmon.svg
 [dm-david.link]: https://david-dm.org/catdad/electronmon
 
-**Disclaimer**: I made this module yesterday. I use it every day for multiple projects. But if you have any feedback, [don't hesitate to tell me about it](https://github.com/catdad/electronmon/issues/new)
+**Disclaimer**: I made this module yesterday. I use it every day for multiple projects. But if you have any feedback, [don't hesitate to tell me about it](https://github.com/catdad/electronmon/issues/new).
 
-This is the simplest way to watch and restart/reload [electron](https://github.com/electron/electron) applications. It requires no quessing, no configuration, and no changing your application or conditionally requiring dependencies. And best of all, it keeps everything in-process, and will not exit on the first application relaunch
+This is the simplest way to watch and restart/reload [electron](https://github.com/electron/electron) applications. It requires no quessing, no configuration, and no changing your application or conditionally requiring dependencies. And best of all, it keeps everything in-process, and will not exit on the first application relaunch.
 
-It was inspired by [nodemon](https://github.com/remy/nodemon) and largely works the same way (_by magic_)
+It was inspired by [nodemon](https://github.com/remy/nodemon) and largely works the same way (_by magic_).
 
 To use it, you don't have to change your application at all. Just use `electronmon` to launch it, using all the same arguments you would pass to the `electron` cli:
 
