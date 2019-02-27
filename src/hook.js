@@ -2,10 +2,10 @@ const path = require('path');
 
 const chokidar = require('chokidar');
 const electron = require('electron');
+const required = require('runtime-required');
 
 const log = require('./log.js');
 const signal = require('./signal.js');
-const required = require('./required.js');
 
 const root = path.resolve('.');
 const pathmap = {};
@@ -34,24 +34,18 @@ watcher.on('change', relpath => {
   }
 });
 
-required.on('file', filepath => {
-  if (filepath.indexOf(root) !== 0) {
-    // this is outside the root directory, so don't watch it
+required.on('file', ({ type, id }) => {
+  if (type !== 'file') {
     return;
   }
 
-  if (filepath.indexOf(path.resolve(root, 'node_modules')) === 0) {
-    // this is a node module, don't watch it
-    return;
-  }
-
-  if (pathmap[filepath]) {
+  if (pathmap[id]) {
     // we are already watching this file, skip it
     return;
   }
 
-  log.verbose('found new main thread file:', filepath);
+  log.verbose('found new main thread file:', id);
 
-  pathmap[filepath] = true;
-  watcher.add(filepath);
+  pathmap[id] = true;
+  watcher.add(id);
 });
