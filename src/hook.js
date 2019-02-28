@@ -18,14 +18,21 @@ const watcher = chokidar.watch('.', {
   ]
 });
 
+function relaunch() {
+  electron.app.on('will-quit', () => {
+    electron.app.exit(signal);
+  });
+
+  electron.app.quit();
+}
+
 watcher.on('change', relpath => {
   const type = 'change';
   const filepath = path.resolve('.', relpath);
 
   if (pathmap[filepath]) {
     log.info(`main file ${type}:`, relpath);
-    electron.app.exit(signal);
-    return;
+    return relaunch();
   }
 
   log.info(`renderer file ${type}:`, relpath);
