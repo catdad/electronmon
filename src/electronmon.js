@@ -6,8 +6,9 @@ const importFrom = require('import-from');
 const executable = importFrom.silent(path.resolve('.'), 'electron');
 const log = require('./log.js');
 const signal = require('./signal.js');
+const watch = require('./watch.js');
 
-function start() {
+function startServer() {
   const hook = path.resolve(__dirname, 'hook.js');
   const args = ['--require', hook ].concat(argv._ || []);
 
@@ -19,20 +20,32 @@ function start() {
   return server;
 }
 
-function watch(server) {
+function waitForChange() {
+  const watcher = watch();
+
+  watcher.on('change', relpath => {
+    log.info(`file change: ${relpath}`);
+    watcher.close();
+
+    module.exports();
+  });
+}
+
+function watchServer(server) {
   server.once('exit', code => {
     if (code === signal) {
       log.info('restarting app due to file change');
 
-      watch(start());
+      module.exports();
       return;
     }
 
     log.info('app exited with code', code);
     log.info('waiting for a change to restart it');
+    waitForChange();
   });
 }
 
 module.exports = () => {
-  watch(start());
+  watchServer(startServer());
 };

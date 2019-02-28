@@ -1,22 +1,13 @@
 const path = require('path');
 
-const chokidar = require('chokidar');
 const electron = require('electron');
 const required = require('runtime-required');
 
 const log = require('./log.js');
 const signal = require('./signal.js');
+const watcher = require('./watch.js')();
 
-const root = path.resolve('.');
 const pathmap = {};
-const watcher = chokidar.watch('.', {
-  cwd: root,
-  ignored: [
-    /(^|[/\\])\../, // Dotfiles
-    'node_modules',
-    '**/*.map'
-  ]
-});
 
 function relaunch() {
   electron.app.on('will-quit', () => {
