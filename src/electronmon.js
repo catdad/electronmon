@@ -10,7 +10,7 @@ const watch = require('./watch.js');
 
 function startServer() {
   const hook = path.resolve(__dirname, 'hook.js');
-  const args = ['--require', hook ].concat(argv._ || []);
+  const args = ['--require', hook].concat(argv._ || []);
 
   const server = spawn(executable, args, {
     stdio: ['inherit', 'inherit', 'inherit'],
