@@ -7,9 +7,10 @@
     "electronmon": "./bin/cli.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha --timeout 10000",
     "cilint": "npm install && npm -s lint",
-    "lint": "eslint bin src"
+    "lint": "eslint bin src",
+    "fixture": "node bin/cli.js fixtures/main.js"
   },
   "repository": {
     "type": "git",
@@ -25,7 +26,13 @@
     "node": ">=8.0.0"
   },
   "devDependencies": {
-    "eslint": "^5.14.1"
+    "chai": "^4.2.0",
+    "electron": "^4.0.8",
+    "eslint": "^5.14.1",
+    "mocha": "^6.0.2",
+    "node-stream": "^1.7.0",
+    "touch": "^3.1.0",
+    "unstyle": "^0.1.0"
   },
   "dependencies": {
     "chalk": "^2.4.2",
