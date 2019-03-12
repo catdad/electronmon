@@ -77,7 +77,7 @@ describe('integration', () => {
   });
 
   it('watches files for restarts or refreshes', async () => {
-    const mon = app = spawn(process.execPath, [
+    app = spawn(process.execPath, [
       cli,
       'main.js'
     ], {
@@ -88,7 +88,7 @@ describe('integration', () => {
       stdio: ['ignore', 'pipe', 'pipe']
     });
 
-    const stdout = collect(wrap(mon.stdout));
+    const stdout = collect(wrap(app.stdout));
 
     await ready(stdout);
 
