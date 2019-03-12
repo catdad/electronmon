@@ -2,12 +2,12 @@ const chalk = require('chalk');
 const color = new chalk.constructor({ level: 1 });
 
 const levels = {
-  verbose: 0,
-  info: 1,
-  error: 2,
-  quiet: 3
+  verbose: 1,
+  info: 2,
+  error: 3,
+  quiet: 4
 };
-const logLevel = levels[process.env.ELECTRONMON_LOGLEVEL] || 1;
+const logLevel = levels[process.env.ELECTRONMON_LOGLEVEL] || levels.info;
 
 const logger = (level) => {
   const thisLevel = levels[level];
