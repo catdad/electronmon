@@ -8,16 +8,16 @@ const log = require('./log.js');
 const signal = require('./signal.js');
 const watch = require('./watch.js');
 
-function startServer() {
+function startApp() {
   const hook = path.resolve(__dirname, 'hook.js');
   const args = ['--require', hook].concat(argv._ || []);
 
-  const server = spawn(executable, args, {
+  const app = spawn(executable, args, {
     stdio: ['inherit', 'inherit', 'inherit'],
     windowsHide: false
   });
 
-  return server;
+  return app;
 }
 
 function waitForChange() {
@@ -31,8 +31,8 @@ function waitForChange() {
   });
 }
 
-function watchServer(server) {
-  server.once('exit', code => {
+function watchApp(app) {
+  app.once('exit', code => {
     if (code === signal) {
       log.info('restarting app due to file change');
 
@@ -47,5 +47,5 @@ function watchServer(server) {
 }
 
 module.exports = () => {
-  watchServer(startServer());
+  watchApp(startApp());
 };
