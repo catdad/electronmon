@@ -19,10 +19,8 @@ describe('integration', () => {
   const collect = stream => {
     const lines = [];
 
-    stream.on('data', line => lines.push(line));
-
     stream._getLines = () => [].concat(lines);
-
+    stream.on('data', line => lines.push(line));
     stream.pause();
 
     return stream;
@@ -38,8 +36,8 @@ describe('integration', () => {
         stream.pause();
 
         if (regex.test(line)) {
-          stream.removeListener('data', onLine);
           stream.removeListener('readable', onReadable);
+          stream.removeListener('data', onLine);
           return resolve();
         }
 
