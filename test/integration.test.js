@@ -70,6 +70,11 @@ describe('integration', () => {
 
     await new Promise(resolve => {
       app.once('exit', () => resolve());
+
+      // destroying the io is necessary on linux and osx
+      app.stdout.destroy();
+      app.stderr.destroy();
+
       app.kill();
     });
   });
