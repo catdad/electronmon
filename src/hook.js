@@ -41,12 +41,6 @@ required.on('file', ({ type, id }) => {
     return;
   }
 
-  // TODO fix when runtime-required fixed this issue
-  // https://github.com/catdad/runtime-required/issues/2
-  if (/node_modules/.test(id)) {
-    return;
-  }
-
   if (pathmap[id]) {
     // we are already watching this file, skip it
     return;
