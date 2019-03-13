@@ -32,7 +32,8 @@
     "mocha": "^6.0.2",
     "node-stream": "^1.7.0",
     "touch": "^3.1.0",
-    "unstyle": "^0.1.0"
+    "unstyle": "^0.1.0",
+    "xvfb-maybe": "^0.2.1"
   },
   "dependencies": {
     "chalk": "^2.4.2",
