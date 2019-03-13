@@ -7,9 +7,9 @@
     "electronmon": "./bin/cli.js"
   },
   "scripts": {
-    "test": "mocha --timeout 10000",
-    "cilint": "npm install && npm -s lint",
     "lint": "eslint bin src",
+    "test": "mocha --timeout 10000",
+    "citest": "xvfb-maybe npm test",
     "fixture": "node bin/cli.js fixtures/main.js"
   },
   "repository": {
