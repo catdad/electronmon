@@ -1,5 +1,6 @@
 os:
   - linux
+  - osx
 
 language: node_js
 
@@ -12,8 +13,8 @@ addons:
       - xvfb
 
 install:
-  - export DISPLAY=':99.0'
-  - Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export DISPLAY=':99.0'                            ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 & ; fi
   - npm ci
 
 script:
