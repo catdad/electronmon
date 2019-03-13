@@ -7,9 +7,9 @@
     "electronmon": "./bin/cli.js"
   },
   "scripts": {
-    "test": "mocha --timeout 10000",
-    "cilint": "npm install && npm -s lint",
     "lint": "eslint bin src",
+    "test": "mocha --timeout 10000",
+    "citest": "xvfb-maybe npm test",
     "fixture": "node bin/cli.js fixtures/main.js"
   },
   "repository": {
@@ -32,7 +32,8 @@
     "mocha": "^6.0.2",
     "node-stream": "^1.7.0",
     "touch": "^3.1.0",
-    "unstyle": "^0.1.0"
+    "unstyle": "^0.1.0",
+    "xvfb-maybe": "^0.2.1"
   },
   "dependencies": {
     "chalk": "^2.4.2",
