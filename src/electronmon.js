@@ -32,7 +32,15 @@ function waitForChange() {
 }
 
 function watchApp(app) {
+  const onTerm = () => {
+    app.kill('SIGINT');
+    process.exit(0);
+  };
+
   app.once('exit', code => {
+    process.removeListener('SIGTERM', onTerm);
+    process.removeListener('SIGHUP', onTerm);
+
     if (code === signal) {
       log.info('restarting app due to file change');
 
@@ -42,8 +50,12 @@ function watchApp(app) {
 
     log.info('app exited with code', code);
     log.info('waiting for a change to restart it');
+
     waitForChange();
   });
+
+  process.once('SIGTERM', onTerm);
+  process.once('SIGHUP', onTerm);
 }
 
 module.exports = () => {

@@ -17,6 +17,10 @@ function relaunch() {
   electron.app.quit();
 }
 
+watcher.on('add', relpath => {
+  log.verbose('watching new file:', relpath);
+});
+
 watcher.on('change', relpath => {
   const type = 'change';
   const filepath = path.resolve('.', relpath);
