@@ -1,7 +1,7 @@
 const path = require('path');
 const { spawn } = require('child_process');
-const argv = require('yargs-parser')(process.argv.slice(2));
 const importFrom = require('import-from');
+const argv = process.argv.slice(2);
 
 const executable = importFrom.silent(path.resolve('.'), 'electron');
 const log = require('./log.js');
@@ -10,7 +10,7 @@ const watch = require('./watch.js');
 
 function startApp() {
   const hook = path.resolve(__dirname, 'hook.js');
-  const args = ['--require', hook].concat(argv._ || []);
+  const args = ['--require', hook].concat(argv);
 
   const app = spawn(executable, args, {
     stdio: ['inherit', 'inherit', 'inherit'],

@@ -38,8 +38,7 @@
     "chalk": "^2.4.2",
     "chokidar": "^2.1.2",
     "import-from": "^2.1.0",
-    "runtime-required": "^1.0.2",
-    "yargs-parser": "^13.0.0"
+    "runtime-required": "^1.0.2"
   },
   "keywords": [
     "electron",
