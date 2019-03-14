@@ -3,12 +3,15 @@
 Watch and reload your electron app the easy way!
 
 [![travis][travis.svg]][travis.link]
+[![appveyor][appveyor.svg]][appveyor.link]
 [![npm-downloads][npm-downloads.svg]][npm.link]
 [![npm-version][npm-version.svg]][npm.link]
 [![dm-david][dm-david.svg]][dm-david.link]
 
 [travis.svg]: https://travis-ci.com/catdad/electronmon.svg?branch=master
 [travis.link]: https://travis-ci.com/catdad/electronmon
+[appveyor.svg]: https://ci.appveyor.com/api/projects/status/github/catdad/electronmon?branch=master&svg=true
+[appveyor.link]: https://ci.appveyor.com/project/catdad/electronmon
 [npm-downloads.svg]: https://img.shields.io/npm/dm/electronmon.svg
 [npm.link]: https://www.npmjs.com/package/electronmon
 [npm-version.svg]: https://img.shields.io/npm/v/electronmon.svg
