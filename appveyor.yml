@@ -1,0 +1,23 @@
+version: '{branch} #{build}'
+
+environment:
+  matrix:
+    - nodejs_version: "10"
+
+# Install scripts. (runs after repo cloning)
+install:
+  - ps: Install-Product node $env:nodejs_version
+  # Output useful info for debugging.
+  - node --version
+  - npm --version
+  - npm ci
+
+# Post-install test scripts.
+test_script:
+  # Set colors, because
+  - set FORCE_COLOR=1
+  - npm test
+
+# Don't actually build.
+# No idea what this does, but it was in the example file
+build: off
