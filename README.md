@@ -20,7 +20,7 @@ Watch and reload your electron app the easy way!
 
 This is the simplest way to watch and restart/reload [electron](https://github.com/electron/electron) applications. It requires no quessing, no configuration, and no changing your application or conditionally requiring dependencies. And best of all, it keeps everything in-process, and will not exit on the first application relaunch.
 
-It was inspired by [nodemon](https://github.com/remy/nodemon) and largely works the same way (_by magic_).
+It was inspired by [nodemon](https://github.com/remy/nodemon) and largely works the same way (_by magic_ 🧙).
 
 To use it, you don't have to change your application at all. Just use `electronmon` to launch it, using all the same arguments you would pass to the `electron` cli:
 
@@ -28,6 +28,6 @@ To use it, you don't have to change your application at all. Just use `electronm
 npx electronmon .
 ```
 
-That's it. Now, all your files are watched. Changes to files in the main process files will cause the application to restart entirely, while changes to any of the renderer process files will simply reload the application browser windows.
+That's it! Now, all your files are watched. Changes to main process files will cause the application to restart entirely, while changes to any of the renderer process files will simply reload the application browser windows.
 
 All you have to do now is write your application code.
