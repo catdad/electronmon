@@ -9,12 +9,16 @@ const watcher = require('./watch.js')();
 
 const pathmap = {};
 
-function relaunch() {
+function exit(code) {
   electron.app.on('will-quit', () => {
-    electron.app.exit(signal);
+    electron.app.exit(code);
   });
 
   electron.app.quit();
+}
+
+function relaunch() {
+  exit(signal);
 }
 
 watcher.on('add', relpath => {
@@ -50,4 +54,10 @@ required.on('file', ({ type, id }) => {
 
   pathmap[id] = true;
   watcher.add(id);
+});
+
+process.on('uncaughtException', err => {
+  const name = electron.app.getName();
+  electron.dialog.showErrorBox(`${name} encountered an error`, err.stack);
+  exit(1);
 });
