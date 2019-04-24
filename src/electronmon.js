@@ -29,6 +29,10 @@ function waitForChange() {
 
     module.exports();
   });
+
+  watcher.once('ready', () => {
+    log.info('waiting for a change to restart it');
+  });
 }
 
 function watchApp(app) {
@@ -42,13 +46,17 @@ function watchApp(app) {
   const onMsg = msg => {
     if (msg === 'uncaught-exception') {
       log.info('uncaught exception occured');
-      log.info('waiting for any change to restart the app');
 
       const watcher = watch();
 
-      watcher.once('change', () => {
+      watcher.once('change', relpath => {
+        log.info(`file change: ${relpath}`);
         overrideSignal = signal;
         app.kill('SIGINT');
+      });
+
+      watcher.once('ready', () => {
+        log.info('waiting for any change to restart the app');
       });
     } else {
       app.once('message', onMsg);
@@ -69,7 +77,6 @@ function watchApp(app) {
     }
 
     log.info('app exited with code', code);
-    log.info('waiting for a change to restart it');
 
     waitForChange();
   });
