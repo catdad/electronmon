@@ -13,8 +13,12 @@ function startApp() {
   const args = ['--require', hook].concat(argv);
 
   const app = spawn(executable, args, {
-    stdio: ['inherit', 'inherit', 'inherit'],
+    stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
     windowsHide: false
+  });
+
+  app.on('message', msg => {
+    console.log('MESSAGE:', msg);
   });
 
   return app;
@@ -32,16 +36,36 @@ function waitForChange() {
 }
 
 function watchApp(app) {
+  let overrideSignal = null;
+
   const onTerm = () => {
     app.kill('SIGINT');
     process.exit(0);
   };
 
+  const onMsg = msg => {
+    if (msg === 'uncaught-exception') {
+      log.info('uncaught exception occured');
+      log.info('waiting for any change to restart the app');
+
+      const watcher = watch();
+
+      watcher.once('change', () => {
+        overrideSignal = signal;
+        app.kill('SIGINT');
+      });
+    } else {
+      app.once('message', onMsg);
+    }
+  };
+
+  app.once('message', onMsg);
+
   app.once('exit', code => {
     process.removeListener('SIGTERM', onTerm);
     process.removeListener('SIGHUP', onTerm);
 
-    if (code === signal) {
+    if (overrideSignal === signal || code === signal) {
       log.info('restarting app due to file change');
 
       module.exports();

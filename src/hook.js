@@ -58,6 +58,11 @@ required.on('file', ({ type, id }) => {
 
 process.on('uncaughtException', err => {
   const name = electron.app.getName();
+
+  if (process.send) {
+    process.send('uncaught-exception');
+  }
+
   electron.dialog.showErrorBox(`${name} encountered an error`, err.stack);
   exit(1);
 });
