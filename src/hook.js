@@ -35,8 +35,16 @@ watcher.on('change', relpath => {
   }
 
   log.info(`renderer file ${type}:`, relpath);
-  for (const win of electron.BrowserWindow.getAllWindows()) {
-    win.webContents.reloadIgnoringCache();
+
+  const windows = electron.BrowserWindow.getAllWindows();
+
+  if (windows && windows.length) {
+    for (const win of electron.BrowserWindow.getAllWindows()) {
+      win.webContents.reloadIgnoringCache();
+    }
+  } else {
+    log.info('there are no windows to reload');
+    // relaunch();
   }
 });
 
