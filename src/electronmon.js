@@ -17,10 +17,6 @@ function startApp() {
     windowsHide: false
   });
 
-  app.on('message', msg => {
-    console.log('MESSAGE:', msg);
-  });
-
   return app;
 }
 
