@@ -5,8 +5,9 @@ const argv = process.argv.slice(2);
 
 const executable = importFrom.silent(path.resolve('.'), 'electron');
 const log = require('./log.js');
-const signal = require('./signal.js');
 const watch = require('./watch.js');
+const signal = require('./signal.js');
+const ignore = -1;
 
 function startApp() {
   const hook = path.resolve(__dirname, 'hook.js');
@@ -46,13 +47,22 @@ function watchApp(app) {
   const onMsg = msg => {
     if (msg === 'uncaught-exception') {
       log.info('uncaught exception occured');
+      overrideSignal = ignore;
 
       const watcher = watch();
 
       watcher.once('change', relpath => {
         log.info(`file change: ${relpath}`);
-        overrideSignal = signal;
-        app.kill('SIGINT');
+
+        if (app.connected) {
+          // if the app is still running, set the signal override to the
+          // regular restart signal and kill the app
+          overrideSignal = signal;
+          app.kill('SIGINT');
+        } else {
+          // the app is no longer running, so do a clean start
+          module.exports();
+        }
       });
 
       watcher.once('ready', () => {
@@ -68,6 +78,10 @@ function watchApp(app) {
   app.once('exit', code => {
     process.removeListener('SIGTERM', onTerm);
     process.removeListener('SIGHUP', onTerm);
+
+    if (overrideSignal === ignore) {
+      return;
+    }
 
     if (overrideSignal === signal || code === signal) {
       log.info('restarting app due to file change');

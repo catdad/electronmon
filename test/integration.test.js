@@ -163,12 +163,11 @@ describe('integration', () => {
       const stdout = collect(wrap(app.stdout));
 
       await waitFor(stdout, /uncaught exception occured/),
-      await waitFor(stdout, /app exited with code 1/),
+      await waitFor(stdout, /waiting for any change to restart the app/);
 
       await Promise.all([
         waitFor(stdout, /file change: main\.js/),
         waitFor(stdout, /uncaught exception occured/),
-        waitFor(stdout, /app exited with code 1/),
         waitFor(stdout, /waiting for any change to restart the app/),
         touch(file('main.js'))
       ]);
@@ -176,7 +175,6 @@ describe('integration', () => {
       await Promise.all([
         waitFor(stdout, /file change: renderer\.js/),
         waitFor(stdout, /uncaught exception occured/),
-        waitFor(stdout, /app exited with code 1/),
         waitFor(stdout, /waiting for any change to restart the app/),
         touch(file('renderer.js'))
       ]);
