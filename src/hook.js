@@ -9,12 +9,16 @@ const watcher = require('./watch.js')();
 
 const pathmap = {};
 
-function relaunch() {
+function exit(code) {
   electron.app.on('will-quit', () => {
-    electron.app.exit(signal);
+    electron.app.exit(code);
   });
 
   electron.app.quit();
+}
+
+function relaunch() {
+  exit(signal);
 }
 
 watcher.on('add', relpath => {
@@ -31,8 +35,16 @@ watcher.on('change', relpath => {
   }
 
   log.info(`renderer file ${type}:`, relpath);
-  for (const win of electron.BrowserWindow.getAllWindows()) {
-    win.webContents.reloadIgnoringCache();
+
+  const windows = electron.BrowserWindow.getAllWindows();
+
+  if (windows && windows.length) {
+    for (const win of electron.BrowserWindow.getAllWindows()) {
+      win.webContents.reloadIgnoringCache();
+    }
+  } else {
+    log.info('there are no windows to reload');
+    // relaunch();
   }
 });
 
@@ -50,4 +62,15 @@ required.on('file', ({ type, id }) => {
 
   pathmap[id] = true;
   watcher.add(id);
+});
+
+process.on('uncaughtException', err => {
+  const name = electron.app.getName();
+
+  if (process.send) {
+    process.send('uncaught-exception');
+  }
+
+  electron.dialog.showErrorBox(`${name} encountered an error`, err.stack);
+  exit(1);
 });

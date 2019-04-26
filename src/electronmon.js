@@ -5,15 +5,16 @@ const argv = process.argv.slice(2);
 
 const executable = importFrom.silent(path.resolve('.'), 'electron');
 const log = require('./log.js');
-const signal = require('./signal.js');
 const watch = require('./watch.js');
+const signal = require('./signal.js');
+const ignore = -1;
 
 function startApp() {
   const hook = path.resolve(__dirname, 'hook.js');
   const args = ['--require', hook].concat(argv);
 
   const app = spawn(executable, args, {
-    stdio: ['inherit', 'inherit', 'inherit'],
+    stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
     windowsHide: false
   });
 
@@ -29,19 +30,60 @@ function waitForChange() {
 
     module.exports();
   });
+
+  watcher.once('ready', () => {
+    log.info('waiting for a change to restart it');
+  });
 }
 
 function watchApp(app) {
+  let overrideSignal = null;
+
   const onTerm = () => {
     app.kill('SIGINT');
     process.exit(0);
   };
 
+  const onMsg = msg => {
+    if (msg === 'uncaught-exception') {
+      log.info('uncaught exception occured');
+      overrideSignal = ignore;
+
+      const watcher = watch();
+
+      watcher.once('change', relpath => {
+        log.info(`file change: ${relpath}`);
+
+        if (app.connected) {
+          // if the app is still running, set the signal override to the
+          // regular restart signal and kill the app
+          overrideSignal = signal;
+          app.kill('SIGINT');
+        } else {
+          // the app is no longer running, so do a clean start
+          module.exports();
+        }
+      });
+
+      watcher.once('ready', () => {
+        log.info('waiting for any change to restart the app');
+      });
+    } else {
+      app.once('message', onMsg);
+    }
+  };
+
+  app.once('message', onMsg);
+
   app.once('exit', code => {
     process.removeListener('SIGTERM', onTerm);
     process.removeListener('SIGHUP', onTerm);
 
-    if (code === signal) {
+    if (overrideSignal === ignore) {
+      return;
+    }
+
+    if (overrideSignal === signal || code === signal) {
       log.info('restarting app due to file change');
 
       module.exports();
@@ -49,7 +91,6 @@ function watchApp(app) {
     }
 
     log.info('app exited with code', code);
-    log.info('waiting for a change to restart it');
 
     waitForChange();
   });

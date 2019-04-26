@@ -112,4 +112,72 @@ describe('integration', () => {
       touch(file('main.js'))
     ]);
   });
+
+  if (process.platform === 'win32') {
+    it('restarts apps on a change after they crash and the dialog is still open', async () => {
+      app = spawn(process.execPath, [
+        cli,
+        'main.js'
+      ], {
+        env: Object.assign({}, process.env, {
+          ELECTRONMON_LOGLEVEL: 'verbose',
+          TEST_ERROR: 'pineapples'
+        }),
+        cwd,
+        stdio: ['ignore', 'pipe', 'pipe']
+      });
+
+      const stdout = collect(wrap(app.stdout));
+
+      await waitFor(stdout, /pineapples/);
+      await waitFor(stdout, /waiting for any change to restart the app/);
+
+      await Promise.all([
+        waitFor(stdout, /file change: main\.js/),
+        waitFor(stdout, /pineapples/),
+        waitFor(stdout, /waiting for any change to restart the app/),
+        touch(file('main.js'))
+      ]);
+
+      await Promise.all([
+        waitFor(stdout, /file change: renderer\.js/),
+        waitFor(stdout, /pineapples/),
+        waitFor(stdout, /waiting for any change to restart the app/),
+        touch(file('renderer.js'))
+      ]);
+    });
+  } else {
+    it('restarts apps on a change after they crash at startup', async () => {
+      app = spawn(process.execPath, [
+        cli,
+        'main.js'
+      ], {
+        env: Object.assign({}, process.env, {
+          ELECTRONMON_LOGLEVEL: 'verbose',
+          TEST_ERROR: 'pineapples'
+        }),
+        cwd,
+        stdio: ['ignore', 'pipe', 'pipe']
+      });
+
+      const stdout = collect(wrap(app.stdout));
+
+      await waitFor(stdout, /uncaught exception occured/),
+      await waitFor(stdout, /waiting for any change to restart the app/);
+
+      await Promise.all([
+        waitFor(stdout, /file change: main\.js/),
+        waitFor(stdout, /uncaught exception occured/),
+        waitFor(stdout, /waiting for any change to restart the app/),
+        touch(file('main.js'))
+      ]);
+
+      await Promise.all([
+        waitFor(stdout, /file change: renderer\.js/),
+        waitFor(stdout, /uncaught exception occured/),
+        waitFor(stdout, /waiting for any change to restart the app/),
+        touch(file('renderer.js'))
+      ]);
+    });
+  }
 });
