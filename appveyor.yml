@@ -20,7 +20,7 @@ install:
   - node --version
   - npm --version
   - npm ci
-  - npm install --save-dev electron@$env:ELECTRON
+  - npm install --save-dev electron@%ELECTRON%
   - node_modules\.bin\electron --version
 
 # Post-install test scripts.
