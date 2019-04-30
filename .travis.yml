@@ -1,13 +1,5 @@
-os:
-  - linux
-  - osx
-
 language: node_js
-
-node_js:
-  - '12'
-  - '10'
-  - '8'
+node_js: '4'
 
 matrix:
   include:
@@ -29,6 +21,9 @@ matrix:
     - os: linux
       node_js: '10'
       env: ELECTRON=3
+  exclude:
+    # workaround, exclude the unwanted default job
+    - node_js: '4'
 
 addons:
   apt:
