@@ -1,13 +1,25 @@
-os:
-  - linux
-  - osx
-
 language: node_js
 
-node_js:
-  - '12'
-  - '10'
-  - '8'
+matrix:
+  include:
+    - os: linux
+      node_js: '12'
+      env: ELECTRON=5
+    - os: osx
+      node_js: '10'
+      env: ELECTRON=4
+    - os: linux
+      node_js: '8'
+      env: ELECTRON=3
+    - os: osx
+      node_js: '12'
+      env: ELECTRON=4
+    - os: linux
+      node_js: '8'
+      env: ELECTRON=5
+    - os: linux
+      node_js: '10'
+      env: ELECTRON=3
 
 addons:
   apt:
@@ -16,6 +28,8 @@ addons:
 
 install:
   - npm ci
+  - npm install --dev electron@$ELECTRON
+  - ./node_modules/.bin/electron --version
 
 script:
   - npm run lint
