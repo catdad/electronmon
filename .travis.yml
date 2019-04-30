@@ -1,13 +1,4 @@
-os:
-  - linux
-  - osx
-
 language: node_js
-
-node_js:
-  - '12'
-  - '10'
-  - '8'
 
 addons:
   apt:
@@ -16,6 +7,8 @@ addons:
 
 install:
   - npm ci
+  - npm install --save-dev electron@$ELECTRON
+  - npm run ciinspect
 
 script:
   - npm run lint
@@ -23,6 +16,30 @@ script:
 
 jobs:
   include:
+    - stage: npm test
+      os: linux
+      node_js: '12'
+      env: ELECTRON=5
+    - stage: npm test
+      os: osx
+      node_js: '12'
+      env: ELECTRON=4
+    - stage: npm test
+      os: linux
+      node_js: '10'
+      env: ELECTRON=4
+    - stage: npm test
+      os: osx
+      node_js: '10'
+      env: ELECTRON=3
+    - stage: npm test
+      os: linux
+      node_js: '8'
+      env: ELECTRON=5
+    - stage: npm test
+      os: osx
+      node_js: '8'
+      env: ELECTRON=3
     - stage: npm release
       if: tag IS present
       node_js: '10'
