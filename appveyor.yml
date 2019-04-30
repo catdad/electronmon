@@ -1,12 +1,16 @@
 version: '{branch} #{build}'
 
+platform: x64
+
 environment:
   matrix:
+#    - nodejs_version: "12"
     - nodejs_version: "10"
+    - nodejs_version: "8"
 
 # Install scripts. (runs after repo cloning)
 install:
-  - ps: Install-Product node $env:nodejs_version
+  - ps: Install-Product node $env:nodejs_version $env:platform
   # Output useful info for debugging.
   - node --version
   - npm --version
