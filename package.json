@@ -28,8 +28,8 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "electron": "^4.0.8",
-    "eslint": "^5.14.1",
-    "mocha": "^6.0.2",
+    "eslint": "^5.16.0",
+    "mocha": "^6.1.4",
     "node-stream": "^1.7.0",
     "touch": "^3.1.0",
     "unstyle": "^0.1.0",
@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "chalk": "^2.4.2",
-    "chokidar": "^2.1.2",
+    "chokidar": "^2.1.5",
     "import-from": "^2.1.0",
     "runtime-required": "^1.0.2"
   },
