@@ -21,7 +21,7 @@ install:
   - npm --version
   - npm ci
   - npm install --dev electron@$env:ELECTRON
-  - 'node_modules\.bin\electron' --version
+  - node_modules\.bin\electron --version
 
 # Post-install test scripts.
 test_script:
