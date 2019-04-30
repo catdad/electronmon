@@ -1,29 +1,4 @@
 language: node_js
-node_js: '4'
-
-matrix:
-  include:
-    - os: linux
-      node_js: '12'
-      env: ELECTRON=5
-    - os: osx
-      node_js: '10'
-      env: ELECTRON=4
-    - os: linux
-      node_js: '8'
-      env: ELECTRON=3
-    - os: osx
-      node_js: '12'
-      env: ELECTRON=4
-    - os: linux
-      node_js: '8'
-      env: ELECTRON=5
-    - os: linux
-      node_js: '10'
-      env: ELECTRON=3
-  exclude:
-    # workaround, exclude the unwanted default job
-    - node_js: '4'
 
 addons:
   apt:
@@ -41,6 +16,30 @@ script:
 
 jobs:
   include:
+    - stage: npm test
+      os: linux
+      node_js: '12'
+      env: ELECTRON=5
+    - stage: npm test
+      os: osx
+      node_js: '10'
+      env: ELECTRON=4
+    - stage: npm test
+      os: linux
+      node_js: '8'
+      env: ELECTRON=3
+    - stage: npm test
+      os: osx
+      node_js: '12'
+      env: ELECTRON=4
+    - stage: npm test
+      os: linux
+      node_js: '8'
+      env: ELECTRON=5
+    - stage: npm test
+      os: osx
+      node_js: '10'
+      env: ELECTRON=3
     - stage: npm release
       if: tag IS present
       node_js: '10'
