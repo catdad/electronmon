@@ -28,7 +28,7 @@ addons:
 
 install:
   - npm ci
-  - npm install --dev electron@$ELECTRON
+  - npm install --save-dev electron@$ELECTRON
   - ./node_modules/.bin/electron --version
 
 script:
