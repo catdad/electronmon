@@ -8,7 +8,7 @@ addons:
 install:
   - npm ci
   - npm install --save-dev electron@$ELECTRON
-  - ./node_modules/.bin/electron --version
+  - npm run ciinspect
 
 script:
   - npm run lint
