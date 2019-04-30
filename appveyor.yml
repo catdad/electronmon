@@ -6,7 +6,12 @@ environment:
   matrix:
 #    - nodejs_version: "12"
     - nodejs_version: "10"
+      ELECTRON: "5"
+    - nodejs_version: "10"
+      ELECTRON: "4"
     - nodejs_version: "8"
+      ELECTRON: "4"
+
 
 # Install scripts. (runs after repo cloning)
 install:
@@ -15,6 +20,8 @@ install:
   - node --version
   - npm --version
   - npm ci
+  - npm install --dev electron@$env:ELECTRON
+  - 'node_modules\.bin\electron' --version
 
 # Post-install test scripts.
 test_script:
