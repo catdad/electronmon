@@ -8,6 +8,8 @@ const log = require('./log.js');
 const watch = require('./watch.js');
 const signal = require('./signal.js');
 const ignore = -1;
+const isTTY = process.stdout.isTTY && process.stderr.isTTY;
+const env = Object.assign(isTTY ? { FORCE_COLOR: '1' } : {}, process.env);
 
 function startApp() {
   const hook = path.resolve(__dirname, 'hook.js');
@@ -15,6 +17,7 @@ function startApp() {
 
   const app = spawn(executable, args, {
     stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
+    env,
     windowsHide: false
   });
 
