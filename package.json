@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "chalk": "^2.4.2",
-    "chokidar": "^2.1.5",
+    "chokidar": "^3.0.2",
     "import-from": "^2.1.0",
     "runtime-required": "^1.0.2"
   },
