@@ -82,7 +82,7 @@ function startApp() {
   return app;
 }
 
-function waitForChange() {
+function waitForChange(done) {
   const watcher = watch();
 
   watcher.on('change', relpath => {
@@ -114,10 +114,13 @@ function waitForChange() {
 
   watcher.once('ready', () => {
     log.info('waiting for a change to restart it');
+
+    if (done) {
+      done();
+    }
   });
 }
 
 module.exports = () => {
-  startApp();
-  waitForChange();
+  waitForChange(() => startApp());
 };
