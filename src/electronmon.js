@@ -34,14 +34,6 @@ function onMessage({ type, file }) {
   }
 }
 
-function restart() {
-  globalApp.once('exit', () => {
-    startApp();
-  });
-
-  globalApp.kill('SIGINT');
-}
-
 function startApp() {
   overrideSignal = null;
 
@@ -82,7 +74,15 @@ function startApp() {
   return app;
 }
 
-function waitForChange(done) {
+function restartApp() {
+  globalApp.once('exit', () => {
+    startApp();
+  });
+
+  globalApp.kill('SIGINT');
+}
+
+function startWatcher(done) {
   const watcher = watch();
 
   watcher.on('change', relpath => {
@@ -91,7 +91,7 @@ function waitForChange(done) {
 
     if (overrideSignal === errored) {
       log.info(`file ${type}: ${relpath}`);
-      return restart();
+      return restartApp();
     }
 
     if (!globalApp) {
@@ -122,5 +122,5 @@ function waitForChange(done) {
 }
 
 module.exports = () => {
-  waitForChange(() => startApp());
+  startWatcher(() => startApp());
 };
