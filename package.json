@@ -11,8 +11,7 @@
     "test": "mocha --timeout 10000",
     "ciinspect": "xvfb-maybe electron --version",
     "citest": "xvfb-maybe npm test",
-    "fixture": "node bin/cli.js fixtures/main.js",
-    "postinstall": "electron-rebuild"
+    "fixture": "node bin/cli.js fixtures/main.js"
   },
   "repository": {
     "type": "git",
@@ -30,7 +29,6 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "electron": "^4.0.8",
-    "electron-rebuild": "^1.8.4",
     "eslint": "^5.16.0",
     "mocha": "^6.1.4",
     "node-stream": "^1.7.0",
