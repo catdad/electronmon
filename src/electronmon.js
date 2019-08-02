@@ -7,11 +7,44 @@ const executable = importFrom.silent(path.resolve('.'), 'electron');
 const log = require('./log.js');
 const watch = require('./watch.js');
 const signal = require('./signal.js');
-const ignore = -1;
+
+const errored = -1;
 const isTTY = process.stdout.isTTY && process.stderr.isTTY;
 const env = Object.assign(isTTY ? { FORCE_COLOR: '1' } : {}, process.env);
 
+const appfiles = {};
+let globalApp;
+let overrideSignal;
+
+function onTerm() {
+  if (globalApp) {
+    globalApp.kill('SIGINT');
+  }
+
+  process.exit(0);
+}
+
+function onMessage({ type, file }) {
+  if (type === 'discover') {
+    appfiles[file] = true;
+  } else if (type === 'uncaught-exception') {
+    log.info('uncaught exception occured');
+    log.info('waiting for any change to restart the app');
+    overrideSignal = errored;
+  }
+}
+
+function restart() {
+  globalApp.once('exit', () => {
+    startApp();
+  });
+
+  globalApp.kill('SIGINT');
+}
+
 function startApp() {
+  overrideSignal = null;
+
   const hook = path.resolve(__dirname, 'hook.js');
   const args = ['--require', hook].concat(argv);
 
@@ -21,6 +54,31 @@ function startApp() {
     windowsHide: false
   });
 
+  app.on('message', onMessage);
+
+  app.once('exit', code => {
+    process.removeListener('SIGTERM', onTerm);
+    process.removeListener('SIGHUP', onTerm);
+    globalApp = null;
+
+    if (overrideSignal === errored) {
+      log.info(`ignoring exit with code ${code}`);
+      return;
+    }
+
+    if (overrideSignal === signal || code === signal) {
+      log.info('restarting app due to file change');
+      startApp();
+      return;
+    }
+
+    log.info(`app exited with code ${code}, waiting for change to restart it`);
+  });
+
+  process.once('SIGTERM', onTerm);
+  process.once('SIGHUP', onTerm);
+  globalApp = app;
+
   return app;
 }
 
@@ -28,10 +86,30 @@ function waitForChange() {
   const watcher = watch();
 
   watcher.on('change', relpath => {
-    log.info(`file change: ${relpath}`);
-    watcher.close();
+    const filepath = path.resolve('.', relpath);
+    const type = 'change';
 
-    module.exports();
+    if (overrideSignal === errored) {
+      log.info(`file ${type}: ${relpath}`);
+      return restart();
+    }
+
+    if (!globalApp) {
+      log.info(`file ${type}: ${relpath}`);
+      return startApp();
+    }
+
+    if (appfiles[filepath]) {
+      log.info(`main file ${type}: ${relpath}`);
+      globalApp.send('reset');
+    } else {
+      log.info(`renderer file ${type}: ${relpath}`);
+      globalApp.send('reload');
+    }
+  });
+
+  watcher.on('add', relpath => {
+    log.verbose('watching new file:', relpath);
   });
 
   watcher.once('ready', () => {
@@ -39,69 +117,7 @@ function waitForChange() {
   });
 }
 
-function watchApp(app) {
-  let overrideSignal = null;
-
-  const onTerm = () => {
-    app.kill('SIGINT');
-    process.exit(0);
-  };
-
-  const onMsg = msg => {
-    if (msg === 'uncaught-exception') {
-      log.info('uncaught exception occured');
-      overrideSignal = ignore;
-
-      const watcher = watch();
-
-      watcher.once('change', relpath => {
-        log.info(`file change: ${relpath}`);
-
-        if (app.connected) {
-          // if the app is still running, set the signal override to the
-          // regular restart signal and kill the app
-          overrideSignal = signal;
-          app.kill('SIGINT');
-        } else {
-          // the app is no longer running, so do a clean start
-          module.exports();
-        }
-      });
-
-      watcher.once('ready', () => {
-        log.info('waiting for any change to restart the app');
-      });
-    } else {
-      app.once('message', onMsg);
-    }
-  };
-
-  app.once('message', onMsg);
-
-  app.once('exit', code => {
-    process.removeListener('SIGTERM', onTerm);
-    process.removeListener('SIGHUP', onTerm);
-
-    if (overrideSignal === ignore) {
-      return;
-    }
-
-    if (overrideSignal === signal || code === signal) {
-      log.info('restarting app due to file change');
-
-      module.exports();
-      return;
-    }
-
-    log.info('app exited with code', code);
-
-    waitForChange();
-  });
-
-  process.once('SIGTERM', onTerm);
-  process.once('SIGHUP', onTerm);
-}
-
 module.exports = () => {
-  watchApp(startApp());
+  startApp();
+  waitForChange();
 };
