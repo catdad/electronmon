@@ -60,10 +60,14 @@ process.on('message', msg => {
 process.on('uncaughtException', err => {
   const name = electron.app.getName();
 
-  if (process.send) {
-    process.send({ type: 'uncaught-exception' });
-  }
+  const onHandled = () => {
+    electron.dialog.showErrorBox(`${name} encountered an error`, err.stack);
+    exit(1);
+  };
 
-  electron.dialog.showErrorBox(`${name} encountered an error`, err.stack);
-  exit(1);
+  if (process.send) {
+    queue({ type: 'uncaught-exception' }, () => onHandled());
+  } else {
+    onHandled();
+  }
 });
