@@ -31,3 +31,7 @@ npx electronmon .
 That's it! Now, all your files are watched. Changes to main process files will cause the application to restart entirely, while changes to any of the renderer process files will simply reload the application browser windows.
 
 All you have to do now is write your application code.
+
+## Supported environments
+
+This module is tested and supported on Windows, MacOS, and Linux, using node versions 8, 10, and 12 and electron versions 3, 4, 5, and 6.
