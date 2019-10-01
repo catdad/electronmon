@@ -17,6 +17,10 @@ script:
 jobs:
   include:
     - stage: npm test
+      os: osx
+      node_js: '12'
+      env: ELECTRON=6
+    - stage: npm test
       os: linux
       node_js: '12'
       env: ELECTRON=5
