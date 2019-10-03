@@ -22,7 +22,7 @@ This is the simplest way to watch and restart/reload [electron](https://github.c
 
 It was inspired by [nodemon](https://github.com/remy/nodemon) and largely works the same way (_by magic_ 🧙).
 
-To use it, you don't have to change your application at all. Just use `electronmon` to launch it, using all the same arguments you would pass to the `electron` cli:
+To use it, you don't have to change your application at all. Just use `electronmon` instead of `electron` to launch your application, using all the same arguments you would pass to the `electron` cli:
 
 ```bash
 npx electronmon .
