@@ -19,7 +19,7 @@ install:
   # Output useful info for debugging.
   - node --version
   - npm --version
-  - npm ci
+  - npm install
   - npm install --save-dev electron@%ELECTRON%
   - node_modules\.bin\electron --version
 
