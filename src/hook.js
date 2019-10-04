@@ -1,11 +1,9 @@
-const path = require('path');
-
 const electron = require('electron');
 const required = require('runtime-required');
 
 const log = require('./log.js');
 const signal = require('./signal.js');
-const watcher = require('./watch.js')();
+const queue = require('./message-queue.js');
 
 const pathmap = {};
 
@@ -17,36 +15,19 @@ function exit(code) {
   electron.app.quit();
 }
 
-function relaunch() {
+function reset() {
   exit(signal);
 }
 
-watcher.on('add', relpath => {
-  log.verbose('watching new file:', relpath);
-});
-
-watcher.on('change', relpath => {
-  const type = 'change';
-  const filepath = path.resolve('.', relpath);
-
-  if (pathmap[filepath]) {
-    log.info(`main file ${type}:`, relpath);
-    return relaunch();
-  }
-
-  log.info(`renderer file ${type}:`, relpath);
-
+function reload() {
   const windows = electron.BrowserWindow.getAllWindows();
 
   if (windows && windows.length) {
-    for (const win of electron.BrowserWindow.getAllWindows()) {
+    for (const win of windows) {
       win.webContents.reloadIgnoringCache();
     }
-  } else {
-    log.info('there are no windows to reload');
-    // relaunch();
   }
-});
+}
 
 required.on('file', ({ type, id }) => {
   if (type !== 'file') {
@@ -61,16 +42,32 @@ required.on('file', ({ type, id }) => {
   log.verbose('found new main thread file:', id);
 
   pathmap[id] = true;
-  watcher.add(id);
+  queue({ type: 'discover', file: id });
+});
+
+process.on('message', msg => {
+  if (msg === 'reset') {
+    return reset();
+  }
+
+  if (msg === 'reload') {
+    return reload();
+  }
+
+  log.verbose('unknown hook message:', msg);
 });
 
 process.on('uncaughtException', err => {
   const name = electron.app.getName();
 
-  if (process.send) {
-    process.send('uncaught-exception');
-  }
+  const onHandled = () => {
+    electron.dialog.showErrorBox(`${name} encountered an error`, err.stack);
+    exit(1);
+  };
 
-  electron.dialog.showErrorBox(`${name} encountered an error`, err.stack);
-  exit(1);
+  if (process.send) {
+    queue({ type: 'uncaught-exception' }, () => onHandled());
+  } else {
+    onHandled();
+  }
 });

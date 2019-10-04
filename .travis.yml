@@ -6,7 +6,7 @@ addons:
       - xvfb
 
 install:
-  - npm ci
+  - npm install
   - npm install --save-dev electron@$ELECTRON
   - npm run ciinspect
 
