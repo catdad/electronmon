@@ -122,5 +122,6 @@ function startWatcher(done) {
 }
 
 module.exports = () => {
-  startWatcher(() => startApp());
+  startWatcher();
+  startApp();
 };
