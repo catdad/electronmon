@@ -8,6 +8,7 @@ const log = require('./log.js');
 const watch = require('./watch.js');
 const signal = require('./signal.js');
 
+const root = path.resolve('.');
 const errored = -1;
 const isTTY = process.stdout.isTTY && process.stderr.isTTY;
 const env = Object.assign(isTTY ? { FORCE_COLOR: '1' } : {}, process.env);
@@ -85,7 +86,8 @@ function restartApp() {
 function startWatcher(done) {
   const watcher = watch();
 
-  watcher.on('change', relpath => {
+  watcher.on('change', ({ path: fullpath }) => {
+    const relpath = path.relative(root, fullpath);
     const filepath = path.resolve('.', relpath);
     const type = 'change';
 
@@ -108,7 +110,8 @@ function startWatcher(done) {
     }
   });
 
-  watcher.on('add', relpath => {
+  watcher.on('add', ({ path: fullpath }) => {
+    const relpath = path.relative(root, fullpath);
     log.verbose('watching new file:', relpath);
   });
 

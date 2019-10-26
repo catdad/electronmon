@@ -38,9 +38,9 @@
   },
   "dependencies": {
     "chalk": "^2.4.2",
-    "chokidar": "^2.1.8",
     "import-from": "^2.1.0",
-    "runtime-required": "^1.0.2"
+    "runtime-required": "^1.0.2",
+    "watchboy": "^0.3.1"
   },
   "keywords": [
     "electron",
