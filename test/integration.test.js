@@ -28,15 +28,25 @@ describe('integration', () => {
   };
 
   const waitFor = (stream, regex) => {
-    return new Promise(resolve => {
+    const err = new Error(`did not find ${regex.toString()}`);
+
+    return new Promise((resolve, reject) => {
       const onReadable = () => {
         stream.resume();
       };
+
+      const timer = setTimeout(() => {
+        stream.pause();
+        stream.removeListener('readable', onReadable);
+        stream.removeListener('data', onLine);
+        reject(err);
+      }, 5000);
 
       const onLine = line => {
         stream.pause();
 
         if (regex.test(line)) {
+          clearTimeout(timer);
           stream.removeListener('readable', onReadable);
           stream.removeListener('data', onLine);
           return resolve();
