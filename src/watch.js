@@ -1,8 +1,9 @@
+const fs = require('fs');
 const path = require('path');
 
 const chokidar = require('chokidar');
 
-const root = path.resolve('.');
+const root = fs.realpathSync(path.resolve('.'));
 
 module.exports = () => {
   const watcher = chokidar.watch('.', {
@@ -16,3 +17,5 @@ module.exports = () => {
 
   return watcher;
 };
+
+module.exports.root = root;
