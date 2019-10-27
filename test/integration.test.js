@@ -72,15 +72,23 @@ describe('integration', () => {
 
   function runTests(realRoot, cwd) {
     let app;
+    let stdout;
 
     const file = fixturename => {
       return path.resolve(realRoot, fixturename);
     };
 
-    afterEach(async () => {
+    afterEach(async function () {
       if (!app) {
         return;
       }
+
+      if (this.currentTest.state === 'failed' && stdout) {
+        // eslint-disable-next-line no-console
+        console.log(stdout._getLines());
+      }
+
+      stdout = null;
 
       const tmp = app;
       app = null;
@@ -108,7 +116,7 @@ describe('integration', () => {
         stdio: ['ignore', 'pipe', 'pipe']
       });
 
-      const stdout = collect(wrap(app.stdout));
+      stdout = collect(wrap(app.stdout));
 
       await ready(stdout);
 
@@ -144,7 +152,7 @@ describe('integration', () => {
           stdio: ['ignore', 'pipe', 'pipe']
         });
 
-        const stdout = collect(wrap(app.stdout));
+        stdout = collect(wrap(app.stdout));
 
         await waitFor(stdout, /pineapples/);
         await waitFor(stdout, /waiting for any change to restart the app/);
@@ -177,7 +185,7 @@ describe('integration', () => {
           stdio: ['ignore', 'pipe', 'pipe']
         });
 
-        const stdout = collect(wrap(app.stdout));
+        stdout = collect(wrap(app.stdout));
 
         await waitFor(stdout, /uncaught exception occured/),
         await waitFor(stdout, /waiting for any change to restart the app/);
