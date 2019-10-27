@@ -6,6 +6,7 @@ const argv = process.argv.slice(2);
 const executable = importFrom.silent(path.resolve('.'), 'electron');
 const log = require('./log.js');
 const watch = require('./watch.js');
+const root = watch.root;
 const signal = require('./signal.js');
 
 const errored = -1;
@@ -86,7 +87,7 @@ function startWatcher(done) {
   const watcher = watch();
 
   watcher.on('change', relpath => {
-    const filepath = path.resolve('.', relpath);
+    const filepath = path.resolve(root, relpath);
     const type = 'change';
 
     if (overrideSignal === errored) {
