@@ -1,11 +1,13 @@
 const path = require('path');
+const os = require('os');
+const fs = require('fs');
 const { spawn } = require('child_process');
 const ns = require('node-stream');
 const unstyle = require('unstyle');
 const touch = require('touch');
+const symlink = require('symlink-dir');
 
 describe('integration', () => {
-  const cwd = path.resolve(__dirname, '../fixtures');
   const cli = path.resolve(__dirname, '../bin/cli.js');
   let app;
 
@@ -59,125 +61,146 @@ describe('integration', () => {
     ]);
   };
 
-  const file = fixturename => {
-    return path.resolve(__dirname, '../fixtures', fixturename);
-  };
+  function runTests(realRoot, cwd) {
+    const file = fixturename => {
+      return path.resolve(realRoot, fixturename);
+    };
 
-  afterEach(async () => {
-    if (!app) {
-      return;
+    afterEach(async () => {
+      if (!app) {
+        return;
+      }
+
+      await new Promise(resolve => {
+        app.once('exit', () => resolve());
+
+        // destroying the io is necessary on linux and osx
+        app.stdout.destroy();
+        app.stderr.destroy();
+
+        app.kill();
+      });
+    });
+
+    it('watches files for restarts or refreshes', async () => {
+      app = spawn(process.execPath, [
+        cli,
+        'main.js'
+      ], {
+        env: Object.assign({}, process.env, {
+          ELECTRONMON_LOGLEVEL: 'verbose'
+        }),
+        cwd,
+        stdio: ['ignore', 'pipe', 'pipe']
+      });
+
+      const stdout = collect(wrap(app.stdout));
+
+      await ready(stdout);
+
+      await Promise.all([
+        waitFor(stdout, /renderer file change: index\.html/),
+        touch(file('index.html'))
+      ]);
+
+      await Promise.all([
+        waitFor(stdout, /renderer file change: renderer\.js/),
+        touch(file('renderer.js'))
+      ]);
+
+      await Promise.all([
+        waitFor(stdout, /main file change: main\.js/),
+        waitFor(stdout, /restarting app due to file change/),
+        waitFor(stdout, /main window open/),
+        touch(file('main.js'))
+      ]);
+    });
+
+    if (process.platform === 'win32') {
+      it('restarts apps on a change after they crash and the dialog is still open', async () => {
+        app = spawn(process.execPath, [
+          cli,
+          'main.js'
+        ], {
+          env: Object.assign({}, process.env, {
+            ELECTRONMON_LOGLEVEL: 'verbose',
+            TEST_ERROR: 'pineapples'
+          }),
+          cwd,
+          stdio: ['ignore', 'pipe', 'pipe']
+        });
+
+        const stdout = collect(wrap(app.stdout));
+
+        await waitFor(stdout, /pineapples/);
+        await waitFor(stdout, /waiting for any change to restart the app/);
+
+        await Promise.all([
+          waitFor(stdout, /file change: main\.js/),
+          waitFor(stdout, /pineapples/),
+          waitFor(stdout, /waiting for any change to restart the app/),
+          touch(file('main.js'))
+        ]);
+
+        await Promise.all([
+          waitFor(stdout, /file change: renderer\.js/),
+          waitFor(stdout, /pineapples/),
+          waitFor(stdout, /waiting for any change to restart the app/),
+          touch(file('renderer.js'))
+        ]);
+      });
+    } else {
+      it('restarts apps on a change after they crash at startup', async () => {
+        app = spawn(process.execPath, [
+          cli,
+          'main.js'
+        ], {
+          env: Object.assign({}, process.env, {
+            ELECTRONMON_LOGLEVEL: 'verbose',
+            TEST_ERROR: 'pineapples'
+          }),
+          cwd,
+          stdio: ['ignore', 'pipe', 'pipe']
+        });
+
+        const stdout = collect(wrap(app.stdout));
+
+        await waitFor(stdout, /uncaught exception occured/),
+        await waitFor(stdout, /waiting for any change to restart the app/);
+
+        await Promise.all([
+          waitFor(stdout, /file change: main\.js/),
+          waitFor(stdout, /uncaught exception occured/),
+          waitFor(stdout, /waiting for any change to restart the app/),
+          touch(file('main.js'))
+        ]);
+
+        await Promise.all([
+          waitFor(stdout, /file change: renderer\.js/),
+          waitFor(stdout, /uncaught exception occured/),
+          waitFor(stdout, /waiting for any change to restart the app/),
+          touch(file('renderer.js'))
+        ]);
+      });
     }
-
-    await new Promise(resolve => {
-      app.once('exit', () => resolve());
-
-      // destroying the io is necessary on linux and osx
-      app.stdout.destroy();
-      app.stderr.destroy();
-
-      app.kill();
-    });
-  });
-
-  it('watches files for restarts or refreshes', async () => {
-    app = spawn(process.execPath, [
-      cli,
-      'main.js'
-    ], {
-      env: Object.assign({}, process.env, {
-        ELECTRONMON_LOGLEVEL: 'verbose'
-      }),
-      cwd,
-      stdio: ['ignore', 'pipe', 'pipe']
-    });
-
-    const stdout = collect(wrap(app.stdout));
-
-    await ready(stdout);
-
-    await Promise.all([
-      waitFor(stdout, /renderer file change: index\.html/),
-      touch(file('index.html'))
-    ]);
-
-    await Promise.all([
-      waitFor(stdout, /renderer file change: renderer\.js/),
-      touch(file('renderer.js'))
-    ]);
-
-    await Promise.all([
-      waitFor(stdout, /main file change: main\.js/),
-      waitFor(stdout, /restarting app due to file change/),
-      waitFor(stdout, /main window open/),
-      touch(file('main.js'))
-    ]);
-  });
-
-  if (process.platform === 'win32') {
-    it('restarts apps on a change after they crash and the dialog is still open', async () => {
-      app = spawn(process.execPath, [
-        cli,
-        'main.js'
-      ], {
-        env: Object.assign({}, process.env, {
-          ELECTRONMON_LOGLEVEL: 'verbose',
-          TEST_ERROR: 'pineapples'
-        }),
-        cwd,
-        stdio: ['ignore', 'pipe', 'pipe']
-      });
-
-      const stdout = collect(wrap(app.stdout));
-
-      await waitFor(stdout, /pineapples/);
-      await waitFor(stdout, /waiting for any change to restart the app/);
-
-      await Promise.all([
-        waitFor(stdout, /file change: main\.js/),
-        waitFor(stdout, /pineapples/),
-        waitFor(stdout, /waiting for any change to restart the app/),
-        touch(file('main.js'))
-      ]);
-
-      await Promise.all([
-        waitFor(stdout, /file change: renderer\.js/),
-        waitFor(stdout, /pineapples/),
-        waitFor(stdout, /waiting for any change to restart the app/),
-        touch(file('renderer.js'))
-      ]);
-    });
-  } else {
-    it('restarts apps on a change after they crash at startup', async () => {
-      app = spawn(process.execPath, [
-        cli,
-        'main.js'
-      ], {
-        env: Object.assign({}, process.env, {
-          ELECTRONMON_LOGLEVEL: 'verbose',
-          TEST_ERROR: 'pineapples'
-        }),
-        cwd,
-        stdio: ['ignore', 'pipe', 'pipe']
-      });
-
-      const stdout = collect(wrap(app.stdout));
-
-      await waitFor(stdout, /uncaught exception occured/),
-      await waitFor(stdout, /waiting for any change to restart the app/);
-
-      await Promise.all([
-        waitFor(stdout, /file change: main\.js/),
-        waitFor(stdout, /uncaught exception occured/),
-        waitFor(stdout, /waiting for any change to restart the app/),
-        touch(file('main.js'))
-      ]);
-
-      await Promise.all([
-        waitFor(stdout, /file change: renderer\.js/),
-        waitFor(stdout, /uncaught exception occured/),
-        waitFor(stdout, /waiting for any change to restart the app/),
-        touch(file('renderer.js'))
-      ]);
-    });
   }
+
+  describe('when running the app from project directory', () => {
+    runTests(path.resolve(__dirname, '../fixtures'), path.resolve(__dirname, '../fixtures'));
+  });
+
+  describe('when running the app from a linked directory', () => {
+    const root = path.resolve(__dirname, '../fixtures');
+    const linkDir = path.resolve(os.tmpdir(), `electronmon-${Math.random().toString(36).slice(2)}`);
+
+    before(async () => {
+      await symlink(root, linkDir);
+    });
+    after((done) => {
+      console.log(linkDir);
+      fs.unlink(linkDir, done);
+    });
+
+    runTests(root, linkDir);
+  });
 });
