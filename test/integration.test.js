@@ -5,6 +5,7 @@ const ns = require('node-stream');
 const unstyle = require('unstyle');
 const touch = require('touch');
 const symlink = require('symlink-dir');
+const { expect } = require('chai');
 
 describe('integration', () => {
   const cli = path.resolve(__dirname, '../bin/cli.js');
@@ -197,8 +198,12 @@ describe('integration', () => {
       await symlink(root, linkDir);
     });
     after((done) => {
-      console.log(linkDir);
       fs.unlink(linkDir, done);
+    });
+
+    it(`making sure link exists at ${linkDir}`, () => {
+      const realPath = fs.realpathSync(linkDir);
+      expect(realPath).to.equal(root);
     });
 
     runTests(root, linkDir);
