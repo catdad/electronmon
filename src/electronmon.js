@@ -6,9 +6,9 @@ const argv = process.argv.slice(2);
 const executable = importFrom.silent(path.resolve('.'), 'electron');
 const log = require('./log.js');
 const watch = require('./watch.js');
+const root = watch.root;
 const signal = require('./signal.js');
 
-const root = path.resolve('.');
 const errored = -1;
 const isTTY = process.stdout.isTTY && process.stderr.isTTY;
 const env = Object.assign(isTTY ? { FORCE_COLOR: '1' } : {}, process.env);
@@ -88,7 +88,7 @@ function startWatcher(done) {
 
   watcher.on('change', ({ path: fullpath }) => {
     const relpath = path.relative(root, fullpath);
-    const filepath = path.resolve('.', relpath);
+    const filepath = path.resolve(root, relpath);
     const type = 'change';
 
     if (overrideSignal === errored) {

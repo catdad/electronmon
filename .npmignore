@@ -40,5 +40,6 @@ coverage/
 # test suff
 test/
 fixtures/
+fixtures*
 .*
 appveyor.yml

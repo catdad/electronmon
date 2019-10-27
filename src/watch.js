@@ -1,7 +1,8 @@
+const fs = require('fs');
 const path = require('path');
 const watchboy = require('watchboy');
 
-const root = path.resolve('.');
+const root = fs.realpathSync(path.resolve('.'));
 
 module.exports = () => {
   const watcher = watchboy(['**/*', '!node_modules', '!.*', '!**/*.map'], {
@@ -10,3 +11,5 @@ module.exports = () => {
 
   return watcher;
 };
+
+module.exports.root = root;

@@ -1,6 +1,6 @@
 {
   "name": "electronmon",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "watch and reload your electron app the easy way",
   "main": "src/electronmon.js",
   "bin": {
@@ -32,6 +32,7 @@
     "eslint": "^5.16.0",
     "mocha": "^6.2.1",
     "node-stream": "^1.7.0",
+    "symlink-dir": "^3.1.1",
     "touch": "^3.1.0",
     "unstyle": "^0.1.0",
     "xvfb-maybe": "^0.2.1"

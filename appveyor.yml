@@ -5,6 +5,8 @@ platform: x64
 environment:
   matrix:
     - nodejs_version: "12"
+      ELECTRON: "7"
+    - nodejs_version: "12"
       ELECTRON: "6"
     - nodejs_version: "10"
       ELECTRON: "5"
