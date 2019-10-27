@@ -1,5 +1,4 @@
 const path = require('path');
-const os = require('os');
 const fs = require('fs');
 const { spawn } = require('child_process');
 const ns = require('node-stream');
@@ -186,12 +185,13 @@ describe('integration', () => {
   }
 
   describe('when running the app from project directory', () => {
-    runTests(path.resolve(__dirname, '../fixtures'), path.resolve(__dirname, '../fixtures'));
+    const root = path.resolve(__dirname, '../fixtures');
+    runTests(root, root);
   });
 
   describe('when running the app from a linked directory', () => {
     const root = path.resolve(__dirname, '../fixtures');
-    const linkDir = path.resolve(os.tmpdir(), `electronmon-${Math.random().toString(36).slice(2)}`);
+    const linkDir = path.resolve(__dirname, '..', `fixtures-${Math.random().toString(36).slice(2)}`);
 
     before(async () => {
       await symlink(root, linkDir);
