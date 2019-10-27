@@ -9,7 +9,6 @@ const { expect } = require('chai');
 
 describe('integration', () => {
   const cli = path.resolve(__dirname, '../bin/cli.js');
-  let app;
 
   const wrap = stream => {
     return stream
@@ -62,6 +61,8 @@ describe('integration', () => {
   };
 
   function runTests(realRoot, cwd) {
+    let app;
+
     const file = fixturename => {
       return path.resolve(realRoot, fixturename);
     };
@@ -71,14 +72,17 @@ describe('integration', () => {
         return;
       }
 
+      const tmp = app;
+      app = null;
+
       await new Promise(resolve => {
-        app.once('exit', () => resolve());
+        tmp.once('exit', () => resolve());
 
         // destroying the io is necessary on linux and osx
-        app.stdout.destroy();
-        app.stderr.destroy();
+        tmp.stdout.destroy();
+        tmp.stderr.destroy();
 
-        app.kill();
+        tmp.kill();
       });
     });
 
