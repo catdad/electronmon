@@ -19,7 +19,9 @@ let globalApp;
 let overrideSignal;
 
 if (pkg.name) {
-  process.title = pkg.name;
+  process.title = `${pkg.name} - electronmon`;
+} else {
+  process.title = 'electronmon';
 }
 
 function onTerm() {
