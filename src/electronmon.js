@@ -3,7 +3,7 @@ const { spawn } = require('child_process');
 const importFrom = require('import-from');
 const argv = process.argv.slice(2);
 
-const executable = importFrom.silent(path.resolve('.'), 'electron');
+const executable = importFrom(path.resolve('.'), 'electron');
 const log = require('./log.js');
 const watch = require('./watch.js');
 const root = watch.root;
