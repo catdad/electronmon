@@ -83,6 +83,11 @@ function startApp() {
 }
 
 function restartApp() {
+  if (!globalApp) {
+    startApp();
+    return;
+  }
+
   globalApp.once('exit', () => {
     startApp();
   });
