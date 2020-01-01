@@ -1,6 +1,6 @@
 {
   "name": "electronmon",
-  "version": "0.6.0",
+  "version": "0.7.1",
   "description": "watch and reload your electron app the easy way",
   "main": "src/electronmon.js",
   "bin": {
@@ -30,7 +30,7 @@
     "chai": "^4.2.0",
     "electron": "^4.0.8",
     "eslint": "^5.16.0",
-    "mocha": "^6.2.1",
+    "mocha": "^6.2.2",
     "node-stream": "^1.7.0",
     "symlink-dir": "^3.1.1",
     "touch": "^3.1.0",
@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "chalk": "^2.4.2",
-    "import-from": "^2.1.0",
+    "import-from": "^3.0.0",
     "runtime-required": "^1.0.2",
     "watchboy": "^0.4.0"
   },

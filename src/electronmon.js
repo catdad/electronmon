@@ -3,11 +3,12 @@ const { spawn } = require('child_process');
 const importFrom = require('import-from');
 const argv = process.argv.slice(2);
 
-const executable = importFrom.silent(path.resolve('.'), 'electron');
+const executable = importFrom(path.resolve('.'), 'electron');
 const log = require('./log.js');
 const watch = require('./watch.js');
 const root = watch.root;
 const signal = require('./signal.js');
+const pkg = require('./package.js');
 
 const errored = -1;
 const isTTY = process.stdout.isTTY && process.stderr.isTTY;
@@ -16,6 +17,12 @@ const env = Object.assign(isTTY ? { FORCE_COLOR: '1' } : {}, process.env);
 const appfiles = {};
 let globalApp;
 let overrideSignal;
+
+if (pkg.name) {
+  process.title = `${pkg.name} - electronmon`;
+} else {
+  process.title = 'electronmon';
+}
 
 function onTerm() {
   if (globalApp) {
@@ -76,6 +83,11 @@ function startApp() {
 }
 
 function restartApp() {
+  if (!globalApp) {
+    startApp();
+    return;
+  }
+
   globalApp.once('exit', () => {
     startApp();
   });
