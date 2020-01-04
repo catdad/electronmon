@@ -77,17 +77,22 @@ module.exports = ({ cwd } = {}) => {
     });
   }
 
-  function restartApp() {
-    if (!globalApp) {
-      startApp();
-      return;
-    }
+  function stopApp() {
+    return new Promise((resolve) => {
+      if (!globalApp) {
+        return resolve();
+      }
 
-    globalApp.once('exit', () => {
-      startApp();
+      globalApp.once('exit', () => {
+        resolve();
+      });
+
+      globalApp.kill('SIGINT');
     });
+  }
 
-    globalApp.kill('SIGINT');
+  function restartApp() {
+    return stopApp().then(() => startApp());
   }
 
   function startWatcher() {
