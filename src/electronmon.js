@@ -6,9 +6,10 @@ const argv = process.argv.slice(2);
 const executable = importFrom(path.resolve('.'), 'electron');
 const log = require('./log.js');
 const watch = require('./watch.js');
-const signal = require('./signal.js');
 
-const errored = -1;
+const SIGNAL = require('./signal.js');
+const ERRORED = -1;
+
 const isTTY = process.stdout.isTTY && process.stderr.isTTY;
 const env = Object.assign(isTTY ? { FORCE_COLOR: '1' } : {}, process.env);
 
@@ -31,7 +32,7 @@ module.exports = ({ cwd } = {}) => {
     } else if (type === 'uncaught-exception') {
       log.info('uncaught exception occured');
       log.info('waiting for any change to restart the app');
-      overrideSignal = errored;
+      overrideSignal = ERRORED;
     }
   }
 
@@ -55,12 +56,12 @@ module.exports = ({ cwd } = {}) => {
         process.removeListener('SIGHUP', onTerm);
         globalApp = null;
 
-        if (overrideSignal === errored) {
+        if (overrideSignal === ERRORED) {
           log.info(`ignoring exit with code ${code}`);
           return;
         }
 
-        if (overrideSignal === signal || code === signal) {
+        if (overrideSignal === SIGNAL || code === SIGNAL) {
           log.info('restarting app due to file change');
           startApp();
           return;
@@ -116,7 +117,7 @@ module.exports = ({ cwd } = {}) => {
         const filepath = path.resolve(cwd, relpath);
         const type = 'change';
 
-        if (overrideSignal === errored) {
+        if (overrideSignal === ERRORED) {
           log.info(`file ${type}: ${relpath}`);
           return restartApp();
         }
