@@ -95,6 +95,19 @@ module.exports = ({ cwd } = {}) => {
     return stopApp().then(() => startApp());
   }
 
+  function reloadApp() {
+    // this is a convenience method to reload the renderer
+    // thread in the app... also, everything is a promise
+    if (!globalApp) {
+      return restartApp();
+    }
+
+    return new Promise((resolve) => {
+      globalApp.send('reload');
+      resolve();
+    });
+  }
+
   function startWatcher() {
     return new Promise((resolve) => {
       const watcher = watch({ root: cwd });
@@ -137,6 +150,10 @@ module.exports = ({ cwd } = {}) => {
     startWatcher(),
     startApp()
   ]).then(() => {
-    return undefined;
+    return {
+      stop: stopApp,
+      restart: restartApp,
+      reload: reloadApp
+    };
   });
 };
