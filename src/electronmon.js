@@ -13,8 +13,6 @@ const isTTY = process.stdout.isTTY && process.stderr.isTTY;
 const env = Object.assign(isTTY ? { FORCE_COLOR: '1' } : {}, process.env);
 
 module.exports = ({ cwd } = {}) => {
-  console.log('watch project in', cwd);
-
   const appfiles = {};
   let globalApp;
   let overrideSignal;
@@ -38,43 +36,45 @@ module.exports = ({ cwd } = {}) => {
   }
 
   function startApp() {
-    overrideSignal = null;
+    return new Promise((resolve) => {
+      overrideSignal = null;
 
-    const hook = path.resolve(__dirname, 'hook.js');
-    const args = ['--require', hook].concat(argv);
+      const hook = path.resolve(__dirname, 'hook.js');
+      const args = ['--require', hook].concat(argv);
 
-    const app = spawn(executable, args, {
-      stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
-      env,
-      windowsHide: false
+      const app = spawn(executable, args, {
+        stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
+        env,
+        windowsHide: false
+      });
+
+      app.on('message', onMessage);
+
+      app.once('exit', code => {
+        process.removeListener('SIGTERM', onTerm);
+        process.removeListener('SIGHUP', onTerm);
+        globalApp = null;
+
+        if (overrideSignal === errored) {
+          log.info(`ignoring exit with code ${code}`);
+          return;
+        }
+
+        if (overrideSignal === signal || code === signal) {
+          log.info('restarting app due to file change');
+          startApp();
+          return;
+        }
+
+        log.info(`app exited with code ${code}, waiting for change to restart it`);
+      });
+
+      process.once('SIGTERM', onTerm);
+      process.once('SIGHUP', onTerm);
+      globalApp = app;
+
+      resolve(app);
     });
-
-    app.on('message', onMessage);
-
-    app.once('exit', code => {
-      process.removeListener('SIGTERM', onTerm);
-      process.removeListener('SIGHUP', onTerm);
-      globalApp = null;
-
-      if (overrideSignal === errored) {
-        log.info(`ignoring exit with code ${code}`);
-        return;
-      }
-
-      if (overrideSignal === signal || code === signal) {
-        log.info('restarting app due to file change');
-        startApp();
-        return;
-      }
-
-      log.info(`app exited with code ${code}, waiting for change to restart it`);
-    });
-
-    process.once('SIGTERM', onTerm);
-    process.once('SIGHUP', onTerm);
-    globalApp = app;
-
-    return app;
   }
 
   function restartApp() {
@@ -90,45 +90,48 @@ module.exports = ({ cwd } = {}) => {
     globalApp.kill('SIGINT');
   }
 
-  function startWatcher(done) {
-    const watcher = watch({ root: cwd });
+  function startWatcher() {
+    return new Promise((resolve) => {
+      const watcher = watch({ root: cwd });
 
-    watcher.on('change', relpath => {
-      const filepath = path.resolve(cwd, relpath);
-      const type = 'change';
+      watcher.on('change', relpath => {
+        const filepath = path.resolve(cwd, relpath);
+        const type = 'change';
 
-      if (overrideSignal === errored) {
-        log.info(`file ${type}: ${relpath}`);
-        return restartApp();
-      }
+        if (overrideSignal === errored) {
+          log.info(`file ${type}: ${relpath}`);
+          return restartApp();
+        }
 
-      if (!globalApp) {
-        log.info(`file ${type}: ${relpath}`);
-        return startApp();
-      }
+        if (!globalApp) {
+          log.info(`file ${type}: ${relpath}`);
+          return startApp();
+        }
 
-      if (appfiles[filepath]) {
-        log.info(`main file ${type}: ${relpath}`);
-        globalApp.send('reset');
-      } else {
-        log.info(`renderer file ${type}: ${relpath}`);
-        globalApp.send('reload');
-      }
-    });
+        if (appfiles[filepath]) {
+          log.info(`main file ${type}: ${relpath}`);
+          globalApp.send('reset');
+        } else {
+          log.info(`renderer file ${type}: ${relpath}`);
+          globalApp.send('reload');
+        }
+      });
 
-    watcher.on('add', relpath => {
-      log.verbose('watching new file:', relpath);
-    });
+      watcher.on('add', relpath => {
+        log.verbose('watching new file:', relpath);
+      });
 
-    watcher.once('ready', () => {
-      log.info('waiting for a change to restart it');
-
-      if (done) {
-        done();
-      }
+      watcher.once('ready', () => {
+        log.info('waiting for a change to restart it');
+        resolve();
+      });
     });
   }
 
-  startWatcher();
-  startApp();
+  return Promise.all([
+    startWatcher(),
+    startApp()
+  ]).then(() => {
+    return undefined;
+  });
 };
