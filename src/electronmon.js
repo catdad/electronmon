@@ -3,16 +3,22 @@ const { spawn } = require('child_process');
 const importFrom = require('import-from');
 
 const executable = importFrom(path.resolve('.'), 'electron');
-const log = require('./log.js');
+const logger = require('./log.js');
 const watch = require('./watch.js');
 
 const SIGNAL = require('./signal.js');
 const ERRORED = -1;
 
-const isTTY = process.stdout.isTTY && process.stderr.isTTY;
-const getEnv = (env) => Object.assign(isTTY ? { FORCE_COLOR: '1' } : {}, process.env, env);
+module.exports = ({
+  cwd,
+  args = ['.'],
+  env = {},
+  stdio = [process.stdin, process.stdout, process.stderr]
+} = {}) => {
+  const isTTY = stdio[1].isTTY;
+  const getEnv = (env) => Object.assign(isTTY ? { FORCE_COLOR: '1' } : {}, process.env, env);
+  const log = logger(stdio[1]);
 
-module.exports = ({ cwd, args = ['.'], env = {} } = {}) => {
   const appfiles = {};
   let globalWatcher;
   let globalApp;
@@ -44,7 +50,7 @@ module.exports = ({ cwd, args = ['.'], env = {} } = {}) => {
       const argv = ['--require', hook].concat(args);
 
       const app = spawn(executable, argv, {
-        stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
+        stdio: [stdio[0], stdio[1], stdio[2], 'ipc'],
         env: getEnv(env),
         cwd,
         windowsHide: false,

@@ -1,7 +1,7 @@
 const electron = require('electron');
 const required = require('runtime-required');
 
-const log = require('./log.js');
+const log = require('./log.js')(process.stdout);
 const signal = require('./signal.js');
 const queue = require('./message-queue.js');
 
