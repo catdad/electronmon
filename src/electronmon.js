@@ -1,7 +1,6 @@
 const path = require('path');
 const { spawn } = require('child_process');
 const importFrom = require('import-from');
-const argv = process.argv.slice(2);
 
 const executable = importFrom(path.resolve('.'), 'electron');
 const log = require('./log.js');
@@ -11,10 +10,11 @@ const SIGNAL = require('./signal.js');
 const ERRORED = -1;
 
 const isTTY = process.stdout.isTTY && process.stderr.isTTY;
-const env = Object.assign(isTTY ? { FORCE_COLOR: '1' } : {}, process.env);
+const getEnv = (env) => Object.assign(isTTY ? { FORCE_COLOR: '1' } : {}, process.env, env);
 
-module.exports = ({ cwd } = {}) => {
+module.exports = ({ cwd, args = ['.'], env = {} } = {}) => {
   const appfiles = {};
+  let globalWatcher;
   let globalApp;
   let overrideSignal;
 
@@ -41,12 +41,13 @@ module.exports = ({ cwd } = {}) => {
       overrideSignal = null;
 
       const hook = path.resolve(__dirname, 'hook.js');
-      const args = ['--require', hook].concat(argv);
+      const argv = ['--require', hook].concat(args);
 
-      const app = spawn(executable, args, {
+      const app = spawn(executable, argv, {
         stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
-        env,
-        windowsHide: false
+        env: getEnv(env),
+        cwd,
+        windowsHide: false,
       });
 
       app.on('message', onMessage);
@@ -78,7 +79,7 @@ module.exports = ({ cwd } = {}) => {
     });
   }
 
-  function stopApp() {
+  function closeApp() {
     return new Promise((resolve) => {
       if (!globalApp) {
         return resolve();
@@ -93,7 +94,7 @@ module.exports = ({ cwd } = {}) => {
   }
 
   function restartApp() {
-    return stopApp().then(() => startApp());
+    return closeApp().then(() => startApp());
   }
 
   function reloadApp() {
@@ -112,6 +113,7 @@ module.exports = ({ cwd } = {}) => {
   function startWatcher() {
     return new Promise((resolve) => {
       const watcher = watch({ root: cwd });
+      globalWatcher = watcher;
 
       watcher.on('change', relpath => {
         const filepath = path.resolve(cwd, relpath);
@@ -147,12 +149,20 @@ module.exports = ({ cwd } = {}) => {
     });
   }
 
+  function stopApp() {
+    return Promise.all([
+      closeApp(),
+      globalWatcher.close()
+    ]).then(() => undefined);
+  }
+
   return Promise.all([
     startWatcher(),
     startApp()
   ]).then(() => {
     return {
       stop: stopApp,
+      close: closeApp,
       restart: restartApp,
       reload: reloadApp
     };
