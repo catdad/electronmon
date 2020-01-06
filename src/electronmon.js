@@ -49,11 +49,33 @@ module.exports = ({
       const hook = path.resolve(__dirname, 'hook.js');
       const argv = ['--require', hook].concat(args);
 
+      // TODO allow redirects like stderr -> stdout
+      const stdioArg = [
+        stdio[0] === process.stdin ? 'inherit' : 'pipe',
+        stdio[1] === process.stdout ? 'inherit' : 'pipe',
+        stdio[2] === process.stderr ? 'inherit' : 'pipe',
+        'ipc'
+      ];
+
       const app = spawn(executable, argv, {
-        stdio: [stdio[0], stdio[1], stdio[2], 'ipc'],
+        stdio: stdioArg,
         env: getEnv(env),
         cwd,
         windowsHide: false,
+      });
+
+      stdioArg.forEach((val, idx) => {
+        if (val !== 'pipe') {
+          return;
+        }
+
+        if (idx === 0) {
+          stdio[0].pipe(app.stdin);
+        } else if (idx === 1) {
+          app.stdout.pipe(stdio[1], { end: false });
+        } else if (idx === 2) {
+          app.stderr.pipe(stdio[2], { end: false });
+        }
       });
 
       app.on('message', onMessage);
