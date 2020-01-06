@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const { Readable } = require('stream');
+const { PassThrough } = require('stream');
 const ns = require('node-stream');
 const unstyle = require('unstyle');
 const touch = require('touch');
@@ -12,31 +12,7 @@ process.env.ELECTRONMON_LOGLEVEL = 'verbose';
 
 const api = require('../');
 
-describe.skip('api', () => {
-  const STDOUT = (() => {
-    const write = process.stdout.write;
-
-    const stream = new Readable({
-      read() {}
-    });
-
-    stream._mockInit = () => {
-      stream._mockReset();
-
-      process.stdout.write = (data, ...rest) => {
-        stream.push(Buffer.from(data));
-        return write.call(process.stdout, data, ...rest);
-      };
-    };
-
-    stream._mockReset = () => {
-      process.stdout.write = write;
-      stream.pause();
-    };
-
-    return stream;
-  })();
-
+describe('api', () => {
   const wrap = stream => {
     return stream
       .pipe(unstyle())
@@ -95,8 +71,6 @@ describe.skip('api', () => {
     };
 
     afterEach(async () => {
-      STDOUT._mockReset();
-
       if (!app) {
         return;
       }
@@ -106,10 +80,15 @@ describe.skip('api', () => {
     });
 
     it('watches files for restarts or refreshes', async () => {
-      STDOUT._mockInit();
-      app = await api({ cwd, args: ['main.js'] });
+      const pass = new PassThrough();
+      app = await api({
+        // NOTE: the API should always use realPath
+        cwd: fs.realpathSync(cwd),
+        args: ['main.js'],
+        stdio: [process.stdin, pass, process.stderr]
+      });
 
-      const stdout = collect(wrap(STDOUT));
+      const stdout = collect(wrap(pass));
 
       await ready(stdout);
 
@@ -133,13 +112,15 @@ describe.skip('api', () => {
 
     if (process.platform === 'win32') {
       it('restarts apps on a change after they crash and the dialog is still open', async () => {
+        const pass = new PassThrough();
         app = await api({
           cwd,
           args: ['main.js'],
-          env: { TEST_ERROR: 'pineapples' }
+          env: { TEST_ERROR: 'pineapples' },
+          stdio: [process.stdin, pass, process.stderr]
         });
 
-        const stdout = collect(wrap(STDOUT));
+        const stdout = collect(wrap(pass));
 
         await waitFor(stdout, /pineapples/);
         await waitFor(stdout, /waiting for any change to restart the app/);
@@ -160,13 +141,15 @@ describe.skip('api', () => {
       });
     } else {
       it('restarts apps on a change after they crash at startup', async () => {
+        const pass = new PassThrough();
         app = await api({
           cwd,
           args: ['main.js'],
-          env: { TEST_ERROR: 'pineapples' }
+          env: { TEST_ERROR: 'pineapples' },
+          stdio: [process.stdin, pass, process.stderr]
         });
 
-        const stdout = collect(wrap(STDOUT));
+        const stdout = collect(wrap(pass));
 
         await waitFor(stdout, /uncaught exception occured/),
         await waitFor(stdout, /waiting for any change to restart the app/);
