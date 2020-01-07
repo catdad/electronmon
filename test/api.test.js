@@ -85,7 +85,7 @@ describe('api', () => {
         // NOTE: the API should always use realPath
         cwd: fs.realpathSync(cwd),
         args: ['main.js'],
-        stdio: [process.stdin, pass, process.stderr]
+        stdio: [process.stdin, pass, pass]
       });
 
       const stdout = collect(wrap(pass));
@@ -117,7 +117,7 @@ describe('api', () => {
           cwd,
           args: ['main.js'],
           env: { TEST_ERROR: 'pineapples' },
-          stdio: [process.stdin, pass, process.stderr]
+          stdio: [process.stdin, pass, pass]
         });
 
         const stdout = collect(wrap(pass));
@@ -146,7 +146,7 @@ describe('api', () => {
           cwd,
           args: ['main.js'],
           env: { TEST_ERROR: 'pineapples' },
-          stdio: [process.stdin, pass, process.stderr]
+          stdio: [process.stdin, pass, pass]
         });
 
         const stdout = collect(wrap(pass));
