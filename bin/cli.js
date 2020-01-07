@@ -3,10 +3,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const root = fs.realpathSync(path.resolve('.'));
-
 const pkg = require('../src/package.js');
 
+const cwd = fs.realpathSync(path.resolve('.'));
 const args = process.argv.slice(2);
 
 if (pkg.name) {
@@ -15,4 +14,4 @@ if (pkg.name) {
   process.title = 'electronmon';
 }
 
-require('../')({ cwd: root, args });
+require('../')({ cwd, args });
