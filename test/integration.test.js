@@ -8,9 +8,6 @@ const touch = require('touch');
 const symlink = require('symlink-dir');
 const { expect } = require('chai');
 
-// TODO api should accept this value
-process.env.ELECTRONMON_LOGLEVEL = 'verbose';
-
 describe('integration', () => {
   const wrap = stream => {
     return stream
@@ -209,7 +206,8 @@ describe('integration', () => {
         cwd: fs.realpathSync(cwd),
         args,
         env,
-        stdio: [process.stdin, pass, pass]
+        stdio: [process.stdin, pass, pass],
+        logLevel: env.ELECTRONMON_LOGLEVEL || 'verbose'
       });
 
       app.stdout = pass;
