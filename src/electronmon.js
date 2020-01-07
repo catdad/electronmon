@@ -9,6 +9,9 @@ const watch = require('./watch.js');
 const SIGNAL = require('./signal.js');
 const ERRORED = -1;
 
+const isStdReadable = stream => stream === process.stdin;
+const isStdWritable = stream => stream === process.stdout || stream === process.stderr;
+
 module.exports = ({
   cwd,
   args = ['.'],
@@ -49,11 +52,10 @@ module.exports = ({
       const hook = path.resolve(__dirname, 'hook.js');
       const argv = ['--require', hook].concat(args);
 
-      // TODO allow redirects like stderr -> stdout
       const stdioArg = [
-        stdio[0] === process.stdin ? 'inherit' : 'pipe',
-        stdio[1] === process.stdout ? 'inherit' : 'pipe',
-        stdio[2] === process.stderr ? 'inherit' : 'pipe',
+        isStdReadable(stdio[0]) ? 'inherit' : 'pipe',
+        isStdWritable(stdio[1]) ? 'inherit' : 'pipe',
+        isStdWritable(stdio[2]) ? 'inherit' : 'pipe',
         'ipc'
       ];
 
