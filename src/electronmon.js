@@ -20,7 +20,6 @@ module.exports = ({
   logLevel = 'info'
 } = {}) => {
   const isTTY = stdio[1].isTTY;
-  console.log('main is tty', isTTY);
   const getEnv = (env) => Object.assign(
     isTTY ? { FORCE_COLOR: '1' } : {},
     process.env,
