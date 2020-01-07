@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const { PassThrough } = require('stream');
 const { spawn } = require('child_process');
 const ns = require('node-stream');
 const unstyle = require('unstyle');
@@ -7,9 +8,10 @@ const touch = require('touch');
 const symlink = require('symlink-dir');
 const { expect } = require('chai');
 
-describe('integration', () => {
-  const cli = path.resolve(__dirname, '../bin/cli.js');
+// TODO api should accept this value
+process.env.ELECTRONMON_LOGLEVEL = 'verbose';
 
+describe('integration', () => {
   const wrap = stream => {
     return stream
       .pipe(unstyle())
@@ -60,42 +62,20 @@ describe('integration', () => {
     ]);
   };
 
-  function runTests(realRoot, cwd) {
+  function runIntegrationTests(realRoot, cwd, start) {
     let app;
 
     const file = fixturename => {
       return path.resolve(realRoot, fixturename);
     };
 
-    afterEach(async () => {
-      if (!app) {
-        return;
-      }
-
-      const tmp = app;
-      app = null;
-
-      await new Promise(resolve => {
-        tmp.once('exit', () => resolve());
-
-        // destroying the io is necessary on linux and osx
-        tmp.stdout.destroy();
-        tmp.stderr.destroy();
-
-        tmp.kill();
-      });
-    });
-
     it('watches files for restarts or refreshes', async () => {
-      app = spawn(process.execPath, [
-        cli,
-        'main.js'
-      ], {
+      app = await start({
+        args: ['main.js'],
+        cwd,
         env: Object.assign({}, process.env, {
           ELECTRONMON_LOGLEVEL: 'verbose'
-        }),
-        cwd,
-        stdio: ['ignore', 'pipe', 'pipe']
+        })
       });
 
       const stdout = collect(wrap(app.stdout));
@@ -122,16 +102,13 @@ describe('integration', () => {
 
     if (process.platform === 'win32') {
       it('restarts apps on a change after they crash and the dialog is still open', async () => {
-        app = spawn(process.execPath, [
-          cli,
-          'main.js'
-        ], {
+        app = await start({
+          args: ['main.js'],
+          cwd,
           env: Object.assign({}, process.env, {
             ELECTRONMON_LOGLEVEL: 'verbose',
             TEST_ERROR: 'pineapples'
-          }),
-          cwd,
-          stdio: ['ignore', 'pipe', 'pipe']
+          })
         });
 
         const stdout = collect(wrap(app.stdout));
@@ -155,16 +132,13 @@ describe('integration', () => {
       });
     } else {
       it('restarts apps on a change after they crash at startup', async () => {
-        app = spawn(process.execPath, [
-          cli,
-          'main.js'
-        ], {
+        app = await start({
+          args: ['main.js'],
+          cwd,
           env: Object.assign({}, process.env, {
             ELECTRONMON_LOGLEVEL: 'verbose',
             TEST_ERROR: 'pineapples'
-          }),
-          cwd,
-          stdio: ['ignore', 'pipe', 'pipe']
+          })
         });
 
         const stdout = collect(wrap(app.stdout));
@@ -189,27 +163,96 @@ describe('integration', () => {
     }
   }
 
-  describe('when running the app from project directory', () => {
-    const root = path.resolve(__dirname, '../fixtures');
-    runTests(root, root);
+  function runIntegrationSuite(start) {
+    describe('when running the app from project directory', () => {
+      const root = path.resolve(__dirname, '../fixtures');
+      runIntegrationTests(root, root, start);
+    });
+
+    describe('when running the app from a linked directory', () => {
+      const root = path.resolve(__dirname, '../fixtures');
+      const linkDir = path.resolve(__dirname, '..', `fixtures-${Math.random().toString(36).slice(2)}`);
+
+      before(async () => {
+        await symlink(root, linkDir);
+      });
+      after((done) => {
+        fs.unlink(linkDir, done);
+      });
+
+      it(`making sure link exists at ${linkDir}`, () => {
+        const realPath = fs.realpathSync(linkDir);
+        expect(realPath).to.equal(root);
+      });
+
+      runIntegrationTests(root, linkDir, start);
+    });
+  }
+
+  describe('api', () => {
+    const api = require('../');
+    let app;
+
+    afterEach(async () => {
+      if (!app) {
+        return;
+      }
+
+      await app.stop();
+      app = null;
+    });
+
+    const start = async ({ args, cwd, env }) => {
+      const pass = new PassThrough();
+      app = await api({
+        // NOTE: the API should always use realPath
+        cwd: fs.realpathSync(cwd),
+        args,
+        env,
+        stdio: [process.stdin, pass, pass]
+      });
+
+      app.stdout = pass;
+
+      return app;
+    };
+
+    runIntegrationSuite(start);
   });
 
-  describe('when running the app from a linked directory', () => {
-    const root = path.resolve(__dirname, '../fixtures');
-    const linkDir = path.resolve(__dirname, '..', `fixtures-${Math.random().toString(36).slice(2)}`);
+  describe('cli', () => {
+    const cli = path.resolve(__dirname, '../bin/cli.js');
+    let app;
 
-    before(async () => {
-      await symlink(root, linkDir);
-    });
-    after((done) => {
-      fs.unlink(linkDir, done);
+    afterEach(async () => {
+      if (!app) {
+        return;
+      }
+
+      const tmp = app;
+      app = null;
+
+      await new Promise(resolve => {
+        tmp.once('exit', () => resolve());
+
+        // destroying the io is necessary on linux and osx
+        tmp.stdout.destroy();
+        tmp.stderr.destroy();
+
+        tmp.kill();
+      });
     });
 
-    it(`making sure link exists at ${linkDir}`, () => {
-      const realPath = fs.realpathSync(linkDir);
-      expect(realPath).to.equal(root);
-    });
+    const start = async ({ args, cwd, env }) => {
+      app = spawn(process.execPath, [cli].concat(args), {
+        env,
+        cwd,
+        stdio: ['ignore', 'pipe', 'pipe']
+      });
 
-    runTests(root, linkDir);
+      return app;
+    };
+
+    runIntegrationSuite(start);
   });
 });
