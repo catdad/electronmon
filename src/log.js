@@ -7,16 +7,15 @@ const levels = {
   error: 3,
   quiet: 4
 };
-const logLevel = levels[process.env.ELECTRONMON_LOGLEVEL] || levels.info;
 
-const logger = (level, stream) => {
-  const isTTY = stream.isTTY;
+const logger = (level, maxLevel, stream) => {
+  const isTTY = stream.isTTY || Number(process.env.FORCE_COLOR) === 1;
   const color = new chalk.constructor({ level: isTTY ? 1 : 0 });
 
   const thisLevel = levels[level];
 
   return (...args) => {
-    if (thisLevel < logLevel) {
+    if (thisLevel < maxLevel) {
       return;
     }
 
@@ -24,10 +23,10 @@ const logger = (level, stream) => {
   };
 };
 
-module.exports = (stream) => {
+module.exports = (stream, maxLevel) => {
   return {
-    error: logger('error', stream),
-    info: logger('info', stream),
-    verbose: logger('verbose', stream)
+    error: logger('error', levels[maxLevel], stream),
+    info: logger('info', levels[maxLevel], stream),
+    verbose: logger('verbose', levels[maxLevel], stream)
   };
 };

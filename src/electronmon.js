@@ -16,11 +16,18 @@ module.exports = ({
   cwd,
   args = ['.'],
   env = {},
-  stdio = [process.stdin, process.stdout, process.stderr]
+  stdio = [process.stdin, process.stdout, process.stderr],
+  logLevel = 'info'
 } = {}) => {
   const isTTY = stdio[1].isTTY;
-  const getEnv = (env) => Object.assign(isTTY ? { FORCE_COLOR: '1' } : {}, process.env, env);
-  const log = logger(stdio[1]);
+  console.log('main is tty', isTTY);
+  const getEnv = (env) => Object.assign(
+    isTTY ? { FORCE_COLOR: '1' } : {},
+    process.env,
+    { ELECTRONMON_LOGLEVEL: logLevel },
+    env
+  );
+  const log = logger(stdio[1], logLevel);
 
   const appfiles = {};
   let globalWatcher;
