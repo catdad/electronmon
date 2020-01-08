@@ -216,6 +216,64 @@ describe('integration', () => {
     };
 
     runIntegrationSuite(start);
+
+    describe('using api methods', () => {
+      const cwd = path.resolve(__dirname, '../fixtures');
+
+      const startReady = async () => {
+        app = await start({
+          args: ['main.js'],
+          cwd,
+          env: Object.assign({}, process.env, {
+            ELECTRONMON_LOGLEVEL: 'verbose'
+          })
+        });
+
+        const stdout = collect(wrap(app.stdout));
+
+        await ready(stdout);
+
+        return { app, stdout };
+      };
+
+      it('can manually restart an app', async () => {
+        const { app, stdout } = await startReady();
+
+        await Promise.all([
+          waitFor(stdout, /app exited/),
+          waitFor(stdout, /main window open/),
+          app.restart()
+        ]);
+      });
+
+      it('can restart an app after it is stopped', async () => {
+        const { app, stdout } = await startReady();
+
+        await Promise.all([
+          waitFor(stdout, /app exited/),
+          app.close()
+        ]);
+
+        await Promise.all([
+          waitFor(stdout, /main window open/),
+          app.restart()
+        ]);
+      });
+
+      it('can restart an app after it is destroyed', async () => {
+        const { app, stdout } = await startReady();
+
+        await Promise.all([
+          waitFor(stdout, /app exited/),
+          app.destroy()
+        ]);
+
+        await Promise.all([
+          ready(stdout),
+          app.restart()
+        ]);
+      });
+    });
   });
 
   describe('cli', () => {
