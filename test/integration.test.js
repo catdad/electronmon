@@ -60,14 +60,12 @@ describe('integration', () => {
   };
 
   function runIntegrationTests(realRoot, cwd, start) {
-    let app;
-
     const file = fixturename => {
       return path.resolve(realRoot, fixturename);
     };
 
     it('watches files for restarts or refreshes', async () => {
-      app = await start({
+      const app = await start({
         args: ['main.js'],
         cwd,
         env: Object.assign({}, process.env, {
@@ -99,7 +97,7 @@ describe('integration', () => {
 
     if (process.platform === 'win32') {
       it('restarts apps on a change after they crash and the dialog is still open', async () => {
-        app = await start({
+        const app = await start({
           args: ['main.js'],
           cwd,
           env: Object.assign({}, process.env, {
@@ -129,7 +127,7 @@ describe('integration', () => {
       });
     } else {
       it('restarts apps on a change after they crash at startup', async () => {
-        app = await start({
+        const app = await start({
           args: ['main.js'],
           cwd,
           env: Object.assign({}, process.env, {
