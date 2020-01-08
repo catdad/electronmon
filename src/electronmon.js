@@ -11,12 +11,12 @@ const isStdReadable = stream => stream === process.stdin;
 const isStdWritable = stream => stream === process.stdout || stream === process.stderr;
 
 module.exports = ({
-  cwd,
+  cwd = process.cwd(),
   args = ['.'],
   env = {},
   logLevel = 'info',
-  stdio = [process.stdin, process.stdout, process.stderr],
-  electronPath
+  electronPath,
+  stdio = [process.stdin, process.stdout, process.stderr]
 } = {}) => {
   const executable = electronPath || require('electron');
 
