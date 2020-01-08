@@ -3,6 +3,9 @@
 const fs = require('fs');
 const path = require('path');
 
+const importFrom = require('import-from');
+const electronPath = importFrom(path.resolve('.'), 'electron');
+
 const pkg = require('../src/package.js');
 
 const cwd = fs.realpathSync(path.resolve('.'));
@@ -15,4 +18,4 @@ if (pkg.name) {
   process.title = 'electronmon';
 }
 
-require('../')({ cwd, args, logLevel });
+require('../')({ cwd, args, logLevel, electronPath });

@@ -1,8 +1,6 @@
 const path = require('path');
 const { spawn } = require('child_process');
-const importFrom = require('import-from');
 
-const executable = importFrom(path.resolve('.'), 'electron');
 const logger = require('./log.js');
 const watch = require('./watch.js');
 
@@ -16,9 +14,12 @@ module.exports = ({
   cwd,
   args = ['.'],
   env = {},
+  logLevel = 'info',
   stdio = [process.stdin, process.stdout, process.stderr],
-  logLevel = 'info'
+  electronPath
 } = {}) => {
+  const executable = electronPath || require('electron');
+
   const isTTY = stdio[1].isTTY;
   const getEnv = (env) => Object.assign(
     isTTY ? { FORCE_COLOR: '1' } : {},
