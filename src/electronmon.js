@@ -132,7 +132,7 @@ module.exports = ({
   }
 
   function restartApp() {
-    return closeApp().then(() => startApp());
+    return closeApp().then(() => init());
   }
 
   function reloadApp() {
