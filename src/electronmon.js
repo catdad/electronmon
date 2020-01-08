@@ -123,6 +123,7 @@ module.exports = ({
       }
 
       globalApp.once('exit', () => {
+        globalApp = null;
         resolve();
       });
 
@@ -190,18 +191,22 @@ module.exports = ({
     return Promise.all([
       closeApp(),
       globalWatcher.close()
+    ]).then(() => {
+      globalApp = globalWatcher = null;
+    });
+  }
+
+  function init() {
+    return Promise.all([
+      globalWatcher ? Promise.resolve() : startWatcher(),
+      globalApp ? Promise.resolve() : startApp()
     ]).then(() => undefined);
   }
 
-  return Promise.all([
-    startWatcher(),
-    startApp()
-  ]).then(() => {
-    return {
-      close: closeApp,
-      destroy: destroyApp,
-      reload: reloadApp,
-      restart: restartApp
-    };
-  });
+  return init().then(() => ({
+    close: closeApp,
+    destroy: destroyApp,
+    reload: reloadApp,
+    restart: restartApp
+  }));
 };
