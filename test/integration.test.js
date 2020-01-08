@@ -195,7 +195,7 @@ describe('integration', () => {
         return;
       }
 
-      await app.stop();
+      await app.destroy();
       app = null;
     });
 

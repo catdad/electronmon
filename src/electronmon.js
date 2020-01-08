@@ -186,7 +186,7 @@ module.exports = ({
     });
   }
 
-  function stopApp() {
+  function destroyApp() {
     return Promise.all([
       closeApp(),
       globalWatcher.close()
@@ -198,10 +198,10 @@ module.exports = ({
     startApp()
   ]).then(() => {
     return {
-      stop: stopApp,
       close: closeApp,
-      restart: restartApp,
-      reload: reloadApp
+      destroy: destroyApp,
+      reload: reloadApp,
+      restart: restartApp
     };
   });
 };
