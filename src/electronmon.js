@@ -98,7 +98,8 @@ function restartApp() {
 function startWatcher(done) {
   const watcher = watch();
 
-  watcher.on('change', relpath => {
+  watcher.on('change', ({ path: fullpath }) => {
+    const relpath = path.relative(root, fullpath);
     const filepath = path.resolve(root, relpath);
     const type = 'change';
 
@@ -121,7 +122,8 @@ function startWatcher(done) {
     }
   });
 
-  watcher.on('add', relpath => {
+  watcher.on('add', ({ path: fullpath }) => {
+    const relpath = path.relative(root, fullpath);
     log.verbose('watching new file:', relpath);
   });
 
