@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const { PassThrough } = require('stream');
 const { spawn } = require('child_process');
 const ns = require('node-stream');
 const unstyle = require('unstyle');
@@ -8,7 +9,7 @@ const symlink = require('symlink-dir');
 const { expect } = require('chai');
 
 describe('integration', () => {
-  const cli = path.resolve(__dirname, '../bin/cli.js');
+  let stdout;
 
   const wrap = stream => {
     return stream
@@ -23,6 +24,9 @@ describe('integration', () => {
     stream._getLines = () => [].concat(lines);
     stream.on('data', line => lines.push(line));
     stream.pause();
+
+    // make it availabel for afterEach on failed tests
+    stdout = stream;
 
     return stream;
   };
@@ -70,53 +74,21 @@ describe('integration', () => {
     ]);
   };
 
-  function runTests(realRoot, cwd) {
-    let app;
-    let stdout;
-
+  function runIntegrationTests(realRoot, cwd, start) {
     const file = fixturename => {
       return path.resolve(realRoot, fixturename);
     };
 
-    afterEach(async function () {
-      if (!app) {
-        return;
-      }
-
-      if (this.currentTest.state === 'failed' && stdout) {
-        // eslint-disable-next-line no-console
-        console.log(stdout._getLines());
-      }
-
-      stdout = null;
-
-      const tmp = app;
-      app = null;
-
-      await new Promise(resolve => {
-        tmp.once('exit', () => resolve());
-
-        // destroying the io is necessary on linux and osx
-        tmp.stdout.destroy();
-        tmp.stderr.destroy();
-
-        tmp.kill();
-      });
-    });
-
     it('watches files for restarts or refreshes', async () => {
-      app = spawn(process.execPath, [
-        cli,
-        'main.js'
-      ], {
+      const app = await start({
+        args: ['main.js'],
+        cwd,
         env: Object.assign({}, process.env, {
           ELECTRONMON_LOGLEVEL: 'verbose'
-        }),
-        cwd,
-        stdio: ['ignore', 'pipe', 'pipe']
+        })
       });
 
-      stdout = collect(wrap(app.stdout));
+      const stdout = collect(wrap(app.stdout));
 
       await ready(stdout);
 
@@ -140,19 +112,16 @@ describe('integration', () => {
 
     if (process.platform === 'win32') {
       it('restarts apps on a change after they crash and the dialog is still open', async () => {
-        app = spawn(process.execPath, [
-          cli,
-          'main.js'
-        ], {
+        const app = await start({
+          args: ['main.js'],
+          cwd,
           env: Object.assign({}, process.env, {
             ELECTRONMON_LOGLEVEL: 'verbose',
             TEST_ERROR: 'pineapples'
-          }),
-          cwd,
-          stdio: ['ignore', 'pipe', 'pipe']
+          })
         });
 
-        stdout = collect(wrap(app.stdout));
+        const stdout = collect(wrap(app.stdout));
 
         await waitFor(stdout, /pineapples/);
         await waitFor(stdout, /waiting for any change to restart the app/);
@@ -173,19 +142,16 @@ describe('integration', () => {
       });
     } else {
       it('restarts apps on a change after they crash at startup', async () => {
-        app = spawn(process.execPath, [
-          cli,
-          'main.js'
-        ], {
+        const app = await start({
+          args: ['main.js'],
+          cwd,
           env: Object.assign({}, process.env, {
             ELECTRONMON_LOGLEVEL: 'verbose',
             TEST_ERROR: 'pineapples'
-          }),
-          cwd,
-          stdio: ['ignore', 'pipe', 'pipe']
+          })
         });
 
-        stdout = collect(wrap(app.stdout));
+        const stdout = collect(wrap(app.stdout));
 
         await waitFor(stdout, /uncaught exception occured/),
         await waitFor(stdout, /waiting for any change to restart the app/);
@@ -207,27 +173,164 @@ describe('integration', () => {
     }
   }
 
-  describe('when running the app from project directory', () => {
-    const root = path.resolve(__dirname, '../fixtures');
-    runTests(root, root);
+  function runIntegrationSuite(start) {
+    describe('when running the app from project directory', () => {
+      const root = path.resolve(__dirname, '../fixtures');
+      runIntegrationTests(root, root, start);
+    });
+
+    describe('when running the app from a linked directory', () => {
+      const root = path.resolve(__dirname, '../fixtures');
+      const linkDir = path.resolve(__dirname, '..', `fixtures-${Math.random().toString(36).slice(2)}`);
+
+      before(async () => {
+        await symlink(root, linkDir);
+      });
+      after((done) => {
+        fs.unlink(linkDir, done);
+      });
+
+      it(`making sure link exists at ${linkDir}`, () => {
+        const realPath = fs.realpathSync(linkDir);
+        expect(realPath).to.equal(root);
+      });
+
+      runIntegrationTests(root, linkDir, start);
+    });
+  }
+
+  afterEach(function () {
+    if (this.currentTest.state === 'failed' && stdout) {
+      // eslint-disable-next-line no-console
+      console.log(stdout._getLines());
+    }
+
+    stdout = null;
   });
 
-  describe('when running the app from a linked directory', () => {
-    const root = path.resolve(__dirname, '../fixtures');
-    const linkDir = path.resolve(__dirname, '..', `fixtures-${Math.random().toString(36).slice(2)}`);
+  describe('api', () => {
+    const api = require('../');
+    let app;
 
-    before(async () => {
-      await symlink(root, linkDir);
-    });
-    after((done) => {
-      fs.unlink(linkDir, done);
-    });
+    afterEach(async () => {
+      if (!app) {
+        return;
+      }
 
-    it(`making sure link exists at ${linkDir}`, () => {
-      const realPath = fs.realpathSync(linkDir);
-      expect(realPath).to.equal(root);
+      await app.destroy();
+      app = null;
     });
 
-    runTests(root, linkDir);
+    const start = async ({ args, cwd, env }) => {
+      const pass = new PassThrough();
+      app = await api({
+        // NOTE: the API should always use realPath
+        cwd: fs.realpathSync(cwd),
+        args,
+        env,
+        stdio: [process.stdin, pass, pass],
+        logLevel: env.ELECTRONMON_LOGLEVEL || 'verbose'
+      });
+
+      app.stdout = pass;
+
+      return app;
+    };
+
+    runIntegrationSuite(start);
+
+    describe('using api methods', () => {
+      const cwd = path.resolve(__dirname, '../fixtures');
+
+      const startReady = async () => {
+        app = await start({
+          args: ['main.js'],
+          cwd,
+          env: Object.assign({}, process.env, {
+            ELECTRONMON_LOGLEVEL: 'verbose'
+          })
+        });
+
+        const stdout = collect(wrap(app.stdout));
+
+        await ready(stdout);
+
+        return { app, stdout };
+      };
+
+      it('can manually restart an app', async () => {
+        const { app, stdout } = await startReady();
+
+        await Promise.all([
+          waitFor(stdout, /app exited/),
+          waitFor(stdout, /main window open/),
+          app.restart()
+        ]);
+      });
+
+      it('can restart an app after it is stopped', async () => {
+        const { app, stdout } = await startReady();
+
+        await Promise.all([
+          waitFor(stdout, /app exited/),
+          app.close()
+        ]);
+
+        await Promise.all([
+          waitFor(stdout, /main window open/),
+          app.restart()
+        ]);
+      });
+
+      it('can restart an app after it is destroyed', async () => {
+        const { app, stdout } = await startReady();
+
+        await Promise.all([
+          waitFor(stdout, /app exited/),
+          app.destroy()
+        ]);
+
+        await Promise.all([
+          ready(stdout),
+          app.restart()
+        ]);
+      });
+    });
+  });
+
+  describe('cli', () => {
+    const cli = path.resolve(__dirname, '../bin/cli.js');
+    let app;
+
+    afterEach(async () => {
+      if (!app) {
+        return;
+      }
+
+      const tmp = app;
+      app = null;
+
+      await new Promise(resolve => {
+        tmp.once('exit', () => resolve());
+
+        // destroying the io is necessary on linux and osx
+        tmp.stdout.destroy();
+        tmp.stderr.destroy();
+
+        tmp.kill();
+      });
+    });
+
+    const start = async ({ args, cwd, env }) => {
+      app = spawn(process.execPath, [cli].concat(args), {
+        env,
+        cwd,
+        stdio: ['ignore', 'pipe', 'pipe']
+      });
+
+      return app;
+    };
+
+    runIntegrationSuite(start);
   });
 });

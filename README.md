@@ -35,3 +35,31 @@ All you have to do now is write your application code.
 ## Supported environments
 
 This module is tested and supported on Windows, MacOS, and Linux, using node versions 8, 10, and 12 and electron versions 3, 4, 5, 6, and 7.
+
+## API Usage
+
+You will likely never need to use this, but in case you do, this module can be required and exposes and API for interacting with the monitor process.
+
+```javascript
+const electronmon = require('electronmon');
+
+(async () => {
+  const options = {...};
+  const app = await electronmon(options);
+})();
+```
+
+All options are optional with reasonable defaults (_again, magic_ 🧙), but the following options are available:
+
+* **cwd** _{String}_ - The root directory of your application
+* **args** _{Array}_ - The arguments that you want to pass to `electron`
+* **env** _{Object}_ - Any additional environment variables you would like to specically provide to your `electron` process
+* **logLevel** _{String}_ - The level of logging you would like. Possible values are `verbose`, `info`, ` error`, and `quiet`
+* **electronPath** _{String}_ - The path to the `electron` binary.
+
+When the monitor is started, it will start your application and the monitoring process. It exposes the following methods for interacting with the monitoring process (all methods are asynchronous and return a Promise):
+
+* **`app.reload()`** → `Promise` - reloads all open web views of your application
+* **`app.restart()`** → `Promise` - restarts the entire electron process of your application
+* **`app.close()`** → `Promise` - closes the entire electron process of your application and waits for file changes in order to restart it
+* **`app.destroy()`** → `Promise` - closes the entire electron process and stops monitoring

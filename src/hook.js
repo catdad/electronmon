@@ -1,7 +1,8 @@
 const electron = require('electron');
 const required = require('runtime-required');
 
-const log = require('./log.js');
+const logLevel = process.env.ELECTRONMON_LOGLEVEL || 'info';
+const log = require('./log.js')(process.stdout, logLevel);
 const signal = require('./signal.js');
 const queue = require('./message-queue.js');
 
