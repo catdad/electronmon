@@ -1,13 +1,8 @@
-const chokidar = require('chokidar');
+const watchboy = require('watchboy');
 
 module.exports = ({ root }) => {
-  const watcher = chokidar.watch('.', {
-    cwd: root,
-    ignored: [
-      /(^|[/\\])\../, // Dotfiles
-      'node_modules',
-      '**/*.map'
-    ]
+  const watcher = watchboy(['**/*', '!node_modules', '!.*', '!**/*.map'], {
+    cwd: root
   });
 
   return watcher;

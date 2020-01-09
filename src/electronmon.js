@@ -153,7 +153,8 @@ module.exports = ({
       const watcher = watch({ root: cwd });
       globalWatcher = watcher;
 
-      watcher.on('change', relpath => {
+      watcher.on('change', ({ path: fullpath }) => {
+        const relpath = path.relative(cwd, fullpath);
         const filepath = path.resolve(cwd, relpath);
         const type = 'change';
 
@@ -176,7 +177,8 @@ module.exports = ({
         }
       });
 
-      watcher.on('add', relpath => {
+      watcher.on('add', ({ path: fullpath }) => {
+        const relpath = path.relative(cwd, fullpath);
         log.verbose('watching new file:', relpath);
       });
 

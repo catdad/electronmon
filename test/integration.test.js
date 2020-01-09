@@ -9,6 +9,8 @@ const symlink = require('symlink-dir');
 const { expect } = require('chai');
 
 describe('integration', () => {
+  let stdout;
+
   const wrap = stream => {
     return stream
       .pipe(unstyle())
@@ -23,19 +25,32 @@ describe('integration', () => {
     stream.on('data', line => lines.push(line));
     stream.pause();
 
+    // make it availabel for afterEach on failed tests
+    stdout = stream;
+
     return stream;
   };
 
   const waitFor = (stream, regex) => {
-    return new Promise(resolve => {
+    const err = new Error(`did not find ${regex.toString()}`);
+
+    return new Promise((resolve, reject) => {
       const onReadable = () => {
         stream.resume();
       };
+
+      const timer = setTimeout(() => {
+        stream.pause();
+        stream.removeListener('readable', onReadable);
+        stream.removeListener('data', onLine);
+        reject(err);
+      }, 5000);
 
       const onLine = line => {
         stream.pause();
 
         if (regex.test(line)) {
+          clearTimeout(timer);
           stream.removeListener('readable', onReadable);
           stream.removeListener('data', onLine);
           return resolve();
@@ -183,6 +198,15 @@ describe('integration', () => {
       runIntegrationTests(root, linkDir, start);
     });
   }
+
+  afterEach(function () {
+    if (this.currentTest.state === 'failed' && stdout) {
+      // eslint-disable-next-line no-console
+      console.log(stdout._getLines());
+    }
+
+    stdout = null;
+  });
 
   describe('api', () => {
     const api = require('../');
