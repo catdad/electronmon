@@ -9,8 +9,8 @@ const levels = {
 };
 
 const logger = (level, maxLevel, stream) => {
-  const isTTY = stream.isTTY || Number(process.env.FORCE_COLOR) === 1;
-  const color = new chalk.constructor({ level: isTTY ? 1 : 0 });
+  const isTTY = stream.isTTY || Number(process.env.FORCE_COLOR) > 1;
+  const color = new chalk.Instance({ level: isTTY ? 1 : 0 });
 
   const thisLevel = levels[level];
 
