@@ -59,7 +59,7 @@ process.on('message', msg => {
 });
 
 process.on('uncaughtException', err => {
-  const name = electron.app.getName();
+  const { name } = electron.app;
 
   const onHandled = () => {
     electron.dialog.showErrorBox(`${name} encountered an error`, err.stack);
