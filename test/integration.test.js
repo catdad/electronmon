@@ -181,7 +181,7 @@ describe('integration', () => {
 
     describe('when running the app from a linked directory', () => {
       const root = path.resolve(__dirname, '../fixtures');
-      const linkDir = path.resolve(__dirname, '..', `fixtures-${Math.random().toString(36).slice(2)}`);
+      const linkDir = path.resolve(__dirname, '..', `test-dir-${Math.random().toString(36).slice(2)}`);
 
       before(async () => {
         await symlink(root, linkDir);

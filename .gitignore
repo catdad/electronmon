@@ -36,4 +36,4 @@ Temporary Items
 node_modules/
 coverage/
 .nyc_output/
-fixtures*
+test-dir*
