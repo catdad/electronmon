@@ -34,7 +34,7 @@ All you have to do now is write your application code.
 
 ## Supported environments
 
-This module is tested and supported on Windows, MacOS, and Linux, using node versions 8, 10, and 12 and electron versions 3, 4, 5, 6, and 7.
+This module is tested and supported on Windows, MacOS, and Linux, using node versions 8, 10, and 12 and electron versions 3, 4, 5, 6, 7, and 8.
 
 ## API Usage
 

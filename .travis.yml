@@ -19,39 +19,39 @@ jobs:
     - stage: npm test
       os: osx
       node_js: '12'
+      env: ELECTRON=8
+    - stage: npm test
+      os: linux
+      node_js: '12'
+      env: ELECTRON=7
+    - stage: npm test
+      os: osx
+      node_js: '10'
       env: ELECTRON=6
     - stage: npm test
-      os: osx
-      node_js: '12'
-      env: ELECTRON=7
-    - stage: npm test
-      os: linux
-      node_js: '12'
-      env: ELECTRON=5
-    - stage: npm test
-      os: osx
-      node_js: '12'
-      env: ELECTRON=4
-    - stage: npm test
       os: linux
       node_js: '10'
-      env: ELECTRON=7
-    - stage: npm test
-      os: linux
-      node_js: '10'
-      env: ELECTRON=4
-    - stage: npm test
-      os: osx
-      node_js: '10'
-      env: ELECTRON=3
-    - stage: npm test
-      os: linux
-      node_js: '8'
       env: ELECTRON=5
     - stage: npm test
       os: osx
       node_js: '8'
+      env: ELECTRON=4
+    - stage: npm test
+      os: linux
+      node_js: '8'
       env: ELECTRON=3
+    - stage: npm test
+      os: osx
+      node_js: '12'
+      env: ELECTRON=3
+    - stage: npm test
+      os: linux
+      node_js: '10'
+      env: ELECTRON=5
+    - stage: npm test
+      os: osx
+      node_js: '8'
+      env: ELECTRON=7
     - stage: npm release
       if: tag IS present
       node_js: '10'
