@@ -11,7 +11,7 @@
     "test": "mocha --timeout 10000",
     "ciinspect": "xvfb-maybe electron --version",
     "citest": "xvfb-maybe npm test",
-    "fixture": "node bin/cli.js fixtures/main.js"
+    "fixture": "cd fixtures && node ../bin/cli.js ."
   },
   "repository": {
     "type": "git",
