@@ -1,7 +1,9 @@
 const watchboy = require('watchboy');
 
-module.exports = ({ root }) => {
-  const watcher = watchboy(['**/*', '!node_modules', '!node_modules/**/*', '!.*', '!**/*.map'], {
+const PATTERNS = ['**/*', '!node_modules', '!node_modules/**/*', '!.*', '!**/*.map'];
+
+module.exports = ({ root, patterns }) => {
+  const watcher = watchboy([...PATTERNS, ...patterns.map(s => `${s}`)], {
     cwd: root
   });
 

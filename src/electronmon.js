@@ -16,7 +16,8 @@ module.exports = ({
   env = {},
   logLevel = 'info',
   electronPath,
-  stdio = [process.stdin, process.stdout, process.stderr]
+  stdio = [process.stdin, process.stdout, process.stderr],
+  patterns = []
 } = {}) => {
   const executable = electronPath || require('electron');
 
@@ -150,7 +151,7 @@ module.exports = ({
 
   function startWatcher() {
     return new Promise((resolve) => {
-      const watcher = watch({ root: cwd });
+      const watcher = watch({ root: cwd, patterns });
       globalWatcher = watcher;
 
       watcher.on('change', ({ path: fullpath }) => {
