@@ -239,6 +239,8 @@ describe('integration', () => {
 
     runIntegrationSuite(start);
 
+    it('can ignore files using defined patterns');
+
     describe('using api methods', () => {
       const cwd = path.resolve(__dirname, '../fixtures');
 
@@ -332,5 +334,7 @@ describe('integration', () => {
     };
 
     runIntegrationSuite(start);
+
+    it('can ignore files using patterns defined in package.json');
   });
 });
