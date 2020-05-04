@@ -196,12 +196,12 @@ describe('integration', () => {
       before(async () => {
         await symlink(root, linkDir);
       });
-      after((done) => {
-        fs.unlink(linkDir, done);
+      after(async () => {
+        await fs.unlink(linkDir);
       });
 
-      it(`making sure link exists at ${linkDir}`, () => {
-        const realPath = fs.realpathSync(linkDir);
+      it(`making sure link exists at ${linkDir}`, async () => {
+        const realPath = await fs.realpath(linkDir);
         expect(realPath).to.equal(root);
       });
 
@@ -288,7 +288,7 @@ describe('integration', () => {
       const pass = new PassThrough();
       app = await api({
         // NOTE: the API should always use realPath
-        cwd: fs.realpathSync(cwd),
+        cwd: await fs.realpath(cwd),
         args,
         env,
         stdio: [process.stdin, pass, pass],
