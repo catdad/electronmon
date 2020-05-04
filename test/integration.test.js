@@ -1,5 +1,5 @@
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs-extra');
 const { PassThrough } = require('stream');
 const { spawn } = require('child_process');
 const ns = require('node-stream');
@@ -65,20 +65,26 @@ describe('integration', () => {
     });
   };
 
-  const ready = stream => {
+  const ready = (stream, { main = true, renderer = true, index = true } = {}) => {
     return Promise.all([
       waitFor(stream, /main window open/),
-      waitFor(stream, /watching new file: main\.js/),
-      waitFor(stream, /watching new file: renderer\.js/),
-      waitFor(stream, /watching new file: index\.html/)
+      main ? waitFor(stream, /watching new file: main\.js/) : Promise.resolve(),
+      renderer ? waitFor(stream, /watching new file: renderer\.js/) : Promise.resolve(),
+      index ? waitFor(stream, /watching new file: index\.html/) : Promise.resolve()
     ]);
   };
 
-  function runIntegrationTests(realRoot, cwd, start) {
-    const file = fixturename => {
-      return path.resolve(realRoot, fixturename);
-    };
+  const createCopy = async () => {
+    const root = path.resolve(__dirname, '../fixtures');
+    const copyDir = path.resolve(__dirname, '..', `test-dir-${Math.random().toString(36).slice(2)}`);
 
+    await fs.ensureDir(copyDir);
+    await fs.copy(root, copyDir);
+
+    return copyDir;
+  };
+
+  function runIntegrationTests(realRoot, cwd, start, file) {
     it('watches files for restarts or refreshes', async () => {
       const app = await start({
         args: ['main.js'],
@@ -174,13 +180,17 @@ describe('integration', () => {
   }
 
   function runIntegrationSuite(start) {
+    const root = path.resolve(__dirname, '../fixtures');
+
+    const file = fixturename => {
+      return path.resolve(root, fixturename);
+    };
+
     describe('when running the app from project directory', () => {
-      const root = path.resolve(__dirname, '../fixtures');
-      runIntegrationTests(root, root, start);
+      runIntegrationTests(root, root, start, file);
     });
 
     describe('when running the app from a linked directory', () => {
-      const root = path.resolve(__dirname, '../fixtures');
       const linkDir = path.resolve(__dirname, '..', `test-dir-${Math.random().toString(36).slice(2)}`);
 
       before(async () => {
@@ -195,7 +205,60 @@ describe('integration', () => {
         expect(realPath).to.equal(root);
       });
 
-      runIntegrationTests(root, linkDir, start);
+      runIntegrationTests(root, linkDir, start, file);
+    });
+
+    describe('when providing watch patterns', () => {
+      let dir;
+
+      const fileLocal = fixturename => {
+        return path.resolve(dir, fixturename);
+      };
+
+      beforeEach(async () => {
+        dir = await createCopy();
+      });
+      afterEach(async () => {
+        fs.remove(dir);
+      });
+
+      it('ignores files defined by negative patterns', async () => {
+        const app = await start({
+          args: ['main.js'],
+          cwd: dir,
+          env: Object.assign({}, process.env, {
+            ELECTRONMON_LOGLEVEL: 'verbose'
+          }),
+          patterns: ['!main-error.js', '!*.html']
+        });
+
+        const stdout = collect(wrap(app.stdout));
+
+        await ready(stdout, { index: false });
+
+        await Promise.all([
+          waitFor(stdout, /renderer file change: renderer\.js/),
+          touch(fileLocal('renderer.js'))
+        ]);
+
+        const linesBefore = [].concat(stdout._getLines());
+        await touch(fileLocal('index.html'));
+        const linesAfter = [].concat(stdout._getLines());
+
+        expect(linesAfter).to.deep.equal(linesBefore);
+
+        await Promise.all([
+          waitFor(stdout, /main file change: main\.js/),
+          waitFor(stdout, /restarting app due to file change/),
+          waitFor(stdout, /main window open/),
+          touch(fileLocal('main-error.js')),
+          touch(fileLocal('main.js'))
+        ]);
+
+        const mainErrorChanged = stdout._getLines().find(line => !!line.match(/main file change: main-error\.js/));
+
+        expect(mainErrorChanged).to.equal(undefined);
+      });
     });
   }
 
@@ -221,7 +284,7 @@ describe('integration', () => {
       app = null;
     });
 
-    const start = async ({ args, cwd, env }) => {
+    const start = async ({ args, cwd, env, patterns = [] }) => {
       const pass = new PassThrough();
       app = await api({
         // NOTE: the API should always use realPath
@@ -229,7 +292,8 @@ describe('integration', () => {
         args,
         env,
         stdio: [process.stdin, pass, pass],
-        logLevel: env.ELECTRONMON_LOGLEVEL || 'verbose'
+        logLevel: env.ELECTRONMON_LOGLEVEL || 'verbose',
+        patterns
       });
 
       app.stdout = pass;
@@ -238,8 +302,6 @@ describe('integration', () => {
     };
 
     runIntegrationSuite(start);
-
-    it('can ignore files using defined patterns');
 
     describe('using api methods', () => {
       const cwd = path.resolve(__dirname, '../fixtures');
@@ -323,7 +385,14 @@ describe('integration', () => {
       });
     });
 
-    const start = async ({ args, cwd, env }) => {
+    const start = async ({ args, cwd, env, patterns }) => {
+      if (patterns && patterns.length) {
+        const pkgPath = path.resolve(cwd, 'package.json');
+        const pkg = JSON.parse(await fs.readFile(pkgPath, 'utf8'));
+        pkg.electronmon = { patterns };
+        await fs.writeFile(pkgPath, JSON.stringify(pkg));
+      }
+
       app = spawn(process.execPath, [cli].concat(args), {
         env,
         cwd,
@@ -334,7 +403,5 @@ describe('integration', () => {
     };
 
     runIntegrationSuite(start);
-
-    it('can ignore files using patterns defined in package.json');
   });
 });
