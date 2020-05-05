@@ -11,6 +11,7 @@ const pkg = require('../src/package.js');
 const cwd = fs.realpathSync(path.resolve('.'));
 const args = process.argv.slice(2);
 const logLevel = process.env.ELECTRONMON_LOGLEVEL || 'info';
+const patterns = Array.isArray(pkg.electronmon.patterns) ? pkg.electronmon.patterns : [];
 
 if (pkg.name) {
   process.title = `${pkg.name} - electronmon`;
@@ -18,4 +19,4 @@ if (pkg.name) {
   process.title = 'electronmon';
 }
 
-require('../')({ cwd, args, logLevel, electronPath });
+require('../')({ cwd, args, logLevel, electronPath, patterns });

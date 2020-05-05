@@ -32,6 +32,22 @@ That's it! Now, all your files are watched. Changes to main process files will c
 
 All you have to do now is write your application code.
 
+## Configuration
+
+Okay, okay... so it's not exactly magic. While `electronmon` will usually work exactly the way you want it to, you might find a need to contigure it. You can do so by providing extra values in your `package.json` in the an `electronmon` object. The following options are available:
+
+* **`patterns`** _`{Array<String>}`_ - Additional patterns to watch, in glob form. The default patterns are `['**/*', '!node_modules', '!node_modules/**/*', '!.*', '!**/*.map']`, and this property will add to that. If you want to ignore some files, start the glob with `!`.
+
+**Example:**
+
+```json
+{
+  "electronmon": {
+    "patterns": ["!test/**"]
+  }
+}
+```
+
 ## Supported environments
 
 This module is tested and supported on Windows, MacOS, and Linux, using node versions 8, 10, and 12 and electron versions 3, 4, 5, 6, 7, and 8.
@@ -51,11 +67,12 @@ const electronmon = require('electronmon');
 
 All options are optional with reasonable defaults (_again, magic_ 🧙), but the following options are available:
 
-* **`cwd`** _{String}_ - The root directory of your application
-* **`args`** _{Array}_ - The arguments that you want to pass to `electron`
-* **`env`** _{Object}_ - Any additional environment variables you would like to specically provide to your `electron` process
-* **`logLevel`** _{String}_ - The level of logging you would like. Possible values are `verbose`, `info`, ` error`, and `quiet`
-* **`electronPath`** _{String}_ - The path to the `electron` binary.
+* **`cwd`** _`{String}`_ - The root directory of your application.
+* **`args`** _`{Array<String>}`_ - The arguments that you want to pass to `electron`.
+* **`env`** _`{Object}`_ - Any additional environment variables you would like to specically provide to your `electron` process.
+* **`patterns`** _`{Array<String>}`_ - Additional patterns to watch, in glob form. The default patterns are `['**/*', '!node_modules', '!node_modules/**/*', '!.*', '!**/*.map']`, and this property will add to that. If you want to ignore some files, start the glob with `!`.
+* **`logLevel`** _`{String}`_ - The level of logging you would like. Possible values are `verbose`, `info`, ` error`, and `quiet`.
+* **`electronPath`** _`{String}`_ - The path to the `electron` binary.
 
 When the monitor is started, it will start your application and the monitoring process. It exposes the following methods for interacting with the monitoring process (all methods are asynchronous and return a Promise):
 
