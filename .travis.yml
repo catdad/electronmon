@@ -18,28 +18,28 @@ jobs:
   include:
     - stage: npm test
       os: osx
-      node_js: '12'
-      env: ELECTRON=8
+      node_js: '14'
+      env: ELECTRON=9
     - stage: npm test
       os: linux
-      node_js: '12'
-      env: ELECTRON=7
+      node_js: '14'
+      env: ELECTRON=8
     - stage: npm test
       os: osx
+      node_js: '10'
+      env: ELECTRON=7
+    - stage: npm test
+      os: linux
       node_js: '10'
       env: ELECTRON=6
     - stage: npm test
-      os: linux
-      node_js: '10'
-      env: ELECTRON=5
-    - stage: npm test
       os: osx
       node_js: '8'
-      env: ELECTRON=4
+      env: ELECTRON=5
     - stage: npm test
       os: linux
       node_js: '8'
-      env: ELECTRON=3
+      env: ELECTRON=4
     - stage: npm test
       os: osx
       node_js: '12'
@@ -52,6 +52,10 @@ jobs:
       os: osx
       node_js: '8'
       env: ELECTRON=7
+    - stage: npm test
+      os: linux
+      node_js: '14'
+      env: ELECTRON=9
     - stage: npm release
       if: tag IS present
       node_js: '10'

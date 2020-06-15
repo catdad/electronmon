@@ -52,7 +52,7 @@ Okay, okay... so it's not exactly magic. While `electronmon` will usually work e
 
 ## Supported environments
 
-This module is tested and supported on Windows, MacOS, and Linux, using node versions 8, 10, and 12 and electron versions 3, 4, 5, 6, 7, and 8.
+This module is tested and supported on Windows, MacOS, and Linux, using node versions 8, 10, 12, and 14 and electron versions 3, 4, 5, 6, 7, 8, 9.
 
 ## API Usage
 
