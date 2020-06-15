@@ -4,11 +4,13 @@ platform: x64
 
 environment:
   matrix:
-    - nodejs_version: "12"
+    - nodejs_version: "14"
+      ELECTRON: "9"
+    - nodejs_version: "14"
       ELECTRON: "8"
     - nodejs_version: "12"
       ELECTRON: "7"
-    - nodejs_version: "10"
+    - nodejs_version: "12"
       ELECTRON: "6"
     - nodejs_version: "10"
       ELECTRON: "5"
