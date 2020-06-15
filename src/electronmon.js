@@ -113,6 +113,16 @@ module.exports = ({
       process.once('SIGHUP', onTerm);
       globalApp = app;
 
+      const send = app.send.bind(app);
+      globalApp.send = (signal) => {
+        send(signal);
+
+        if (signal === 'reset') {
+          // app is being killed, ignore all future messages
+          globalApp.send = () => {};
+        }
+      };
+
       resolve(app);
     });
   }
