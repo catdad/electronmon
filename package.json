@@ -42,7 +42,7 @@
     "chalk": "^3.0.0",
     "import-from": "^3.0.0",
     "runtime-required": "^1.0.2",
-    "watchboy": "^0.4.1"
+    "watchboy": "^0.4.2"
   },
   "keywords": [
     "electron",
