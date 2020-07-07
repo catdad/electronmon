@@ -4,12 +4,16 @@ const { PassThrough } = require('stream');
 const { spawn } = require('child_process');
 const ns = require('node-stream');
 const unstyle = require('unstyle');
-const touch = require('touch');
 const symlink = require('symlink-dir');
 const { expect } = require('chai');
 
 describe('integration', () => {
   let stdout;
+
+  const touch = async file => {
+    const content = await fs.readFile(file);
+    await fs.writeFile(file, content);
+  };
 
   const wrap = stream => {
     return stream
