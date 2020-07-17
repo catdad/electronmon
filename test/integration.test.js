@@ -219,11 +219,27 @@ describe('integration', () => {
         return path.resolve(dir, fixturename);
       };
 
-      beforeEach(async () => {
+      before(async () => {
         dir = await createCopy();
       });
-      afterEach(async () => {
-        fs.remove(dir);
+      after(async function () {
+        // this can take a bit of time because the folder remains locked
+        // for a little while (usually round 15 seconds)
+        this.timeout(45000);
+        let remainingMilliseconds = 30 * 1000;
+        const end = Date.now() + remainingMilliseconds;
+
+        while (remainingMilliseconds > 0) {
+          try {
+            await fs.remove(dir);
+            remainingMilliseconds = 0;
+          } catch (e) {
+            remainingMilliseconds = end - Date.now();
+            if (e.code !== 'EBUSY' && remainingMilliseconds > 0) {
+              throw e;
+            }
+          }
+        }
       });
 
       it('ignores files defined by negative patterns', async () => {
