@@ -5,19 +5,13 @@ platform: x64
 environment:
   matrix:
     - nodejs_version: "14"
+      ELECTRON: "11"
+    - nodejs_version: "12"
+      ELECTRON: "10"
+    - nodejs_version: "10"
       ELECTRON: "9"
     - nodejs_version: "14"
       ELECTRON: "8"
-    - nodejs_version: "12"
-      ELECTRON: "7"
-    - nodejs_version: "12"
-      ELECTRON: "6"
-    - nodejs_version: "10"
-      ELECTRON: "5"
-    - nodejs_version: "10"
-      ELECTRON: "4"
-    - nodejs_version: "8"
-      ELECTRON: "3"
 
 # Install scripts. (runs after repo cloning)
 install:
