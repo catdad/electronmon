@@ -24,11 +24,11 @@
   },
   "homepage": "https://github.com/catdad/electronmon#readme",
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=10.0.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "electron": "^9.1.0",
+    "electron": "^11.3.0",
     "eslint": "^5.16.0",
     "fs-extra": "^8.1.0",
     "mocha": "^6.2.2",
