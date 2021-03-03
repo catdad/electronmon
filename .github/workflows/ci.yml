@@ -21,8 +21,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
+      - if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: sudo apt-get install xvfb
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
       - run: npm install
-      - run: npm test
+      - name: npm test
+        run: npx xvfb-maybe npm test
