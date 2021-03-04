@@ -16,17 +16,17 @@ jobs:
         node: [14]
         electron: [11]
         include:
-          - node: 12
-            os: ubuntu-latest
+          - os: ubuntu-latest
+            node: 12
             electron: 10
-          - node: 12
-            os: macos-latest
+          - os: macos-latest
+            node: 12
             electron: 9
-          - node: 10
-            os: windows-latest
-            electron: 8
-          - node: 10
-            os: macos-latest
+          - os: windows-latest
+            node: 10
+            electron: 9
+          - os: macos-latest
+            node: 10
             electron: 8
     runs-on: ${{ matrix.os }}
     steps:
