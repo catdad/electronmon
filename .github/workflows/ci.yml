@@ -27,5 +27,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: npm install
+      - run: node --version
+      - run: npx electron --version
       - name: npm test
         run: npx xvfb-maybe npm test
