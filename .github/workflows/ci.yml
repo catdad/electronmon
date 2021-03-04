@@ -18,6 +18,16 @@ jobs:
         include:
           - node: 12
             os: ubuntu-latest
+            electron: 10
+          - node: 12
+            os: macos-latest
+            electron: 9
+          - node: 10
+            os: windows-latest
+            electron: 8
+          - node: 10
+            os: macos-latest
+            electron: 8
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -27,6 +37,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: npm install
+      - run: npm install electron@${{ matrix.electron }}
       - run: node --version
       - run: npx electron --version
       - name: npm test
