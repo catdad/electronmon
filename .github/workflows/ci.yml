@@ -41,6 +41,7 @@ jobs:
       - run: node --version
       - run: npx electron --version
       - name: npm test
+        run: npx xvfb-maybe npm test
 
   publish:
     runs-on: ubuntu-latest
@@ -55,7 +56,3 @@ jobs:
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
-      
-    
-    
-        run: npx xvfb-maybe npm test
