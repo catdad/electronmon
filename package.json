@@ -1,6 +1,6 @@
 {
   "name": "electronmon",
-  "version": "1.1.2",
+  "version": "2.0.0",
   "description": "watch and reload your electron app the easy way",
   "main": "src/electronmon.js",
   "bin": {
