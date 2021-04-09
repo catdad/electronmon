@@ -29,6 +29,7 @@ jobs:
             node: 10
             electron: 8
     runs-on: ${{ matrix.os }}
+    name: test (${{matrix.os}}, node@${{matrix.node}}, electron@${{matric.electron}})
     steps:
       - uses: actions/checkout@v2
       - if: ${{ matrix.os == 'ubuntu-latest' }}
