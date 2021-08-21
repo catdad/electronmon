@@ -40,7 +40,7 @@
   "dependencies": {
     "chalk": "^3.0.0",
     "import-from": "^3.0.0",
-    "runtime-required": "^1.0.2",
+    "runtime-required": "^1.1.0",
     "watchboy": "^0.4.3"
   },
   "keywords": [
