@@ -25,11 +25,16 @@ function reload() {
 
   if (windows && windows.length) {
     for (const win of windows) {
-      win.webContents.reloadIgnoringCache();
+      win.webContents.reloadIgnoringCache()  
+   
+      const views = win.getBrowserViews()
+      views.forEach(function(view){
+        view.webContents.reloadIgnoringCache()
+      })
+
     }
   }
 }
-
 required.on('file', ({ type, id }) => {
   if (type !== 'file') {
     return;
