@@ -44,6 +44,17 @@ jobs:
       - name: npm test
         run: npx xvfb-maybe npm test
 
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 16
+      - run: npm install
+      - run: node --version
+      - run: npm run lint
+
   publish:
     runs-on: ubuntu-latest
     needs: [test]
