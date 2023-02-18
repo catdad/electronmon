@@ -132,20 +132,30 @@ describe('integration', () => {
         });
 
         const stdout = collect(wrap(app.stdout));
+        const stderr = collect(wrap(app.stderr));
 
-        await waitFor(stdout, /pineapples/);
+        // in recent versions of electron (e.g. 23), the error appears in stderr
+        // but older versions (e.g. 14) print the error to stdout
+        // I'm just going to go ahead and not care, because the user
+        // will see it anyway, and this was an electron change I have no control over anyway
+        const waitForError = async (expression) => await Promise.race([
+          waitFor(stdout, expression),
+          waitFor(stderr, expression)
+        ]);
+
+        await waitForError(/pineapples/);
         await waitFor(stdout, /waiting for any change to restart the app/);
 
         await Promise.all([
           waitFor(stdout, /file change: main\.js/),
-          waitFor(stdout, /pineapples/),
+          waitForError(/pineapples/),
           waitFor(stdout, /waiting for any change to restart the app/),
           touch(file('main.js'))
         ]);
 
         await Promise.all([
           waitFor(stdout, /file change: renderer\.js/),
-          waitFor(stdout, /pineapples/),
+          waitForError(/pineapples/),
           waitFor(stdout, /waiting for any change to restart the app/),
           touch(file('renderer.js'))
         ]);
@@ -305,18 +315,21 @@ describe('integration', () => {
     });
 
     const start = async ({ args, cwd, env, patterns = [] }) => {
-      const pass = new PassThrough();
+      const stdout = new PassThrough();
+      const stderr = new PassThrough();
+
       app = await api({
         // NOTE: the API should always use realPath
         cwd: await fs.realpath(cwd),
         args,
         env,
-        stdio: [process.stdin, pass, pass],
+        stdio: [process.stdin, stdout, stderr],
         logLevel: env.ELECTRONMON_LOGLEVEL || 'verbose',
         patterns
       });
 
-      app.stdout = pass;
+      app.stdout = stdout;
+      app.stderr = stderr;
 
       return app;
     };
