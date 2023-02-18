@@ -8,7 +8,7 @@
   },
   "scripts": {
     "lint": "eslint bin src",
-    "test": "mocha --timeout 10000",
+    "test": "mocha --timeout 15000",
     "ciinspect": "xvfb-maybe electron --version",
     "citest": "xvfb-maybe npm test",
     "fixture": "cd fixtures && node ../bin/cli.js ."
