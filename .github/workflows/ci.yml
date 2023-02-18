@@ -37,7 +37,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: test (${{matrix.os}}, node@${{matrix.node}}, electron@${{matrix.electron}})
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - if: ${{ matrix.os == 'ubuntu-latest' }}
         run: sudo apt-get install xvfb
       - uses: actions/setup-node@v1
@@ -53,7 +53,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-node@v1
         with:
           node-version: 16
@@ -66,7 +66,7 @@ jobs:
     needs: [test, lint]
     if: startsWith(github.ref, 'refs/tags/') && github.event_name != 'pull_request'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-node@v1
         with:
           node-version: 14
