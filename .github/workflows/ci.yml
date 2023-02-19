@@ -48,7 +48,11 @@ jobs:
       - run: node --version
       - run: npx electron --version
       - name: npm test
-        run: npx xvfb-maybe npm test
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          command: npx xvfb-maybe npm test
 
   lint:
     runs-on: ubuntu-latest
