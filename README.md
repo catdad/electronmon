@@ -8,7 +8,7 @@ Watch and reload your electron app the easy way!
 [![npm-downloads][npm-downloads.svg]][npm.link]
 [![npm-version][npm-version.svg]][npm.link]
 
-[github-actions.svg]: https://img.shields.io/github/workflow/status/catdad/electronmon/CI/master?logo=GitHub
+[github-actions.svg]: https://img.shields.io/github/actions/workflow/status/catdad/electronmon/ci.yml?logo=github&branch=master
 [github-actions.link]: https://github.com/catdad/electronmon/actions/workflows/ci.yml
 [npm-downloads.svg]: https://img.shields.io/npm/dm/electronmon.svg
 [npm.link]: https://www.npmjs.com/package/electronmon
