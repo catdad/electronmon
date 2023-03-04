@@ -48,7 +48,7 @@ jobs:
       - run: node --version
       - run: npx electron --version
       - name: npm test
-        run: npx xvfb-maybe npx retry-cli -n 3 -- npm test
+        run: npm run citest
 
   lint:
     runs-on: ubuntu-latest
