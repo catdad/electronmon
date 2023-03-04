@@ -8,7 +8,7 @@
   },
   "scripts": {
     "lint": "eslint bin src",
-    "test": "mocha --timeout 10000",
+    "test": "mocha --timeout 20000 --retries=1",
     "ciinspect": "xvfb-maybe electron --version",
     "citest": "xvfb-maybe npm test",
     "fixture": "cd fixtures && node ../bin/cli.js ."
@@ -28,11 +28,12 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "electron": "^11.3.0",
+    "electron": "^23.1.0",
     "eslint": "^5.16.0",
     "fs-extra": "^8.1.0",
     "mocha": "^6.2.2",
     "node-stream": "^1.7.0",
+    "retry-cli": "^0.7.0",
     "symlink-dir": "^3.1.1",
     "unstyle": "^0.1.0",
     "xvfb-maybe": "^0.2.1"

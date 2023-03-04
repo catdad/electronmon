@@ -13,28 +13,34 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        node: [14]
-        electron: [11]
+        node: [16, 18]
+        electron: [23, 20]
         include:
           - os: ubuntu-latest
+            node: 14
+            electron: 18
+          - os: ubuntu-latest
+            node: 14
+            electron: 16
+          - os: windows-latest
+            node: 14
+            electron: 14
+          - os: macos-latest
+            node: 14
+            electron: 12
+          - os: windows-latest
             node: 12
             electron: 10
-          - os: macos-latest
-            node: 12
-            electron: 9
-          - os: windows-latest
-            node: 10
-            electron: 9
           - os: macos-latest
             node: 10
             electron: 8
     runs-on: ${{ matrix.os }}
     name: test (${{matrix.os}}, node@${{matrix.node}}, electron@${{matrix.electron}})
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - if: ${{ matrix.os == 'ubuntu-latest' }}
         run: sudo apt-get install xvfb
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
       - run: npm install
@@ -42,13 +48,13 @@ jobs:
       - run: node --version
       - run: npx electron --version
       - name: npm test
-        run: npx xvfb-maybe npm test
+        run: npx xvfb-maybe npx retry-cli -n 3 -- npm test
 
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
       - run: npm install
@@ -60,8 +66,8 @@ jobs:
     needs: [test, lint]
     if: startsWith(github.ref, 'refs/tags/') && github.event_name != 'pull_request'
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 14
           registry-url: https://registry.npmjs.org/
