@@ -13,10 +13,10 @@ const pathmap = {};
 // is check if all of them resolve to a file, and if they do
 // assume that file is a main process file
 (function addMainFile(args) {
-  for (const opt of args) {
+  for (const arg of args) {
     try {
-      const optPath = path.resolve(opt);
-      const file = require.resolve(optPath);
+      const argPath = path.resolve(arg);
+      const file = require.resolve(argPath);
       pathmap[file] = true;
       queue({ type: 'discover', file });
     } catch (e) {
@@ -25,6 +25,8 @@ const pathmap = {};
     }
   }
 })(process.argv.slice(3));
+// we run `electron --require hook.js ...`
+// so remove the first 3 arguments
 
 function exit(code) {
   electron.app.on('will-quit', () => {
