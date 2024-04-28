@@ -20,7 +20,10 @@ const pathmap = {};
       const file = require.resolve(optPath);
       pathmap[file] = true;
       queue({ type: 'discover', file });
-    } catch (e) {}
+    } catch (e) {
+      // you know... because lint
+      e;
+    }
   }
 })(process.argv.slice(3));
 
