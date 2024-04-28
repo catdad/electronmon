@@ -13,18 +13,17 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        node: [16, 18]
-        electron: [23, 20]
-        exclude:
-          # older electron seems to misbehave on apple silicon
-          - os: macos-latest
-            electron: 20
+        node: [20, 18]
+        electron: [30, 28, 23]
         include:
           - os: ubuntu-latest
-            node: 14
+            node: 16
+            electron: 20
+          - os: ubuntu-latest
+            node: 16
             electron: 18
           - os: ubuntu-latest
-            node: 14
+            node: 16
             electron: 16
           - os: windows-latest
             node: 14
