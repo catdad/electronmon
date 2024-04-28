@@ -15,6 +15,10 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
         node: [16, 18]
         electron: [23, 20]
+        exclude:
+          # older electron seems to misbehave on apple silicon
+          - os: macos-latest
+            electron: 20
         include:
           - os: ubuntu-latest
             node: 14
