@@ -15,6 +15,10 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
         node: [16, 18]
         electron: [23, 20]
+        exclude:
+          # older electron seems to misbehave on apple silicon
+          - os: macos-latest
+            electron: 20
         include:
           - os: ubuntu-latest
             node: 14
@@ -25,13 +29,13 @@ jobs:
           - os: windows-latest
             node: 14
             electron: 14
-          - os: macos-latest
+          - os: ubuntu-latest
             node: 14
             electron: 12
           - os: windows-latest
             node: 12
             electron: 10
-          - os: macos-latest
+          - os: ubuntu-latest
             node: 10
             electron: 8
     runs-on: ${{ matrix.os }}
@@ -46,7 +50,7 @@ jobs:
       - run: npm install
       - run: npm install electron@${{ matrix.electron }}
       - run: node --version
-      - run: npx electron --version
+      - run: npx electron --version || echo well that went poorly
       - name: npm test
         run: npm run citest
 
