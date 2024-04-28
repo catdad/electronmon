@@ -161,7 +161,8 @@ module.exports = ({
 
   function startWatcher() {
     return new Promise((resolve) => {
-      const watcher = watch({ root: cwd, patterns });
+      const parentFolder = cwd.replace("\\Host","")
+      const watcher = watch({ root: parentFolder, patterns });
       globalWatcher = watcher;
 
       watcher.on('change', ({ path: fullpath }) => {
