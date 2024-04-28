@@ -14,9 +14,8 @@ const pathmap = {};
 // assume that file is a main process file
 (function addMainFile(args) {
   for (const opt of args) {
-    const optPath = path.resolve(opt);
-
     try {
+      const optPath = path.resolve(opt);
       const file = require.resolve(optPath);
       pathmap[file] = true;
       queue({ type: 'discover', file });
