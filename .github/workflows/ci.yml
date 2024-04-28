@@ -25,13 +25,13 @@ jobs:
           - os: windows-latest
             node: 14
             electron: 14
-          - os: macos-latest
+          - os: ubuntu-latest
             node: 14
             electron: 12
           - os: windows-latest
             node: 12
             electron: 10
-          - os: macos-latest
+          - os: ubuntu-latest
             node: 10
             electron: 8
     runs-on: ${{ matrix.os }}
