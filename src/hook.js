@@ -1,5 +1,6 @@
 const electron = require('electron');
 const required = require('runtime-required');
+const path = require('path');
 
 const logLevel = process.env.ELECTRONMON_LOGLEVEL || 'info';
 const log = require('./log.js')(process.stdout, logLevel);
@@ -7,6 +8,25 @@ const signal = require('./signal.js');
 const queue = require('./message-queue.js');
 
 const pathmap = {};
+
+// we can get any number of arguments... best we can do
+// is check if all of them resolve to a file, and if they do
+// assume that file is a main process file
+(function addMainFile(args) {
+  for (const arg of args) {
+    try {
+      const argPath = path.resolve(arg);
+      const file = require.resolve(argPath);
+      pathmap[file] = true;
+      queue({ type: 'discover', file });
+    } catch (e) {
+      // you know... because lint
+      e;
+    }
+  }
+})(process.argv.slice(3));
+// we run `electron --require hook.js ...`
+// so remove the first 3 arguments
 
 function exit(code) {
   electron.app.on('will-quit', () => {
