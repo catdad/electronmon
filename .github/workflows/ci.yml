@@ -15,6 +15,10 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
         node: [20, 18]
         electron: [30, 28, 23]
+        exclude:
+          # there's an issue with signals in retry-cli on linux in node 20 🤷‍♀️
+          - os: ubuntu-latest
+            node: 20
         include:
           - os: ubuntu-latest
             node: 16
