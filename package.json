@@ -33,7 +33,7 @@
     "fs-extra": "^8.1.0",
     "mocha": "^6.2.2",
     "node-stream": "^1.7.0",
-    "retry-cli": "0.6.0",
+    "retry-cli": "0.7.0",
     "symlink-dir": "^3.1.1",
     "unstyle": "^0.1.0",
     "xvfb-maybe": "^0.2.1"
