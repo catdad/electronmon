@@ -12,46 +12,46 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-latest, windows-latest, ubuntu-22.04]
         node: [22, 20]
         electron: [34, 32, 30]
         exclude:
           # there's an issue with signals in retry-cli on linux in node 20 🤷‍♀️
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             node: 20
         include:
           - os: windows-latest
             electron: 28
             node: 18
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             node: 18
             electron: 23
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             node: 16
             electron: 20
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             node: 16
             electron: 18
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             node: 16
             electron: 16
           - os: windows-latest
             node: 14
             electron: 14
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             node: 14
             electron: 12
           - os: windows-latest
             node: 12
             electron: 10
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             node: 10
             electron: 8
     runs-on: ${{ matrix.os }}
     name: test (${{matrix.os}}, node@${{matrix.node}}, electron@${{matrix.electron}})
     steps:
       - uses: actions/checkout@v3
-      - if: ${{ matrix.os == 'ubuntu-latest' }}
+      - if: ${{ matrix.os == 'ubuntu-22.04' }}
         run: sudo apt-get install xvfb
       - uses: actions/setup-node@v3
         with:
