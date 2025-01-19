@@ -50,7 +50,7 @@ This module is tested and supported on Windows, MacOS, and Linux, using node ver
 
 ## API Usage
 
-You will likely never need to use this, but in case you do, this module can be required and exposes and API for interacting with the monitor process.
+You will likely never need to use this, but in case you do, this module can be required and exposes an API for interacting with the monitor process.
 
 ```javascript
 const electronmon = require('electronmon');
