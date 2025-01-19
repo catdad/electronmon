@@ -10,7 +10,8 @@
     "lint": "eslint bin src",
     "test": "mocha --timeout 20000 --retries=1",
     "ciinspect": "xvfb-maybe electron --version",
-    "citest": "xvfb-maybe retry -n 3 -- npm test",
+    "citest": "xvfb-maybe npm test",
+    "citest-retry": "xvfb-maybe retry -n 3 -- npm test",
     "fixture": "cd fixtures && node ../bin/cli.js ."
   },
   "repository": {
