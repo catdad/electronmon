@@ -45,11 +45,20 @@ function reload() {
 
   if (windows && windows.length) {
     for (const win of windows) {
-      win.webContents.reloadIgnoringCache();
+      if(win.isDestroyed() == false){
+        win.webContents.reloadIgnoringCache()  
+   
+        const views = win.getBrowserViews()
+        views.forEach(function(view){
+          if(view.webContents.isDestroyed() == false){
+            view.webContents.reloadIgnoringCache()
+          }
+        })
+      }    
+
     }
   }
 }
-
 required.on('file', ({ type, id }) => {
   if (type !== 'file') {
     return;
