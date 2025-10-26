@@ -90,7 +90,7 @@ module.exports = ({
 
       app.on('message', onMessage);
 
-      app.once('exit', code => {
+      app.once('exit', (code, signal) => {
         process.removeListener('SIGTERM', onTerm);
         process.removeListener('SIGHUP', onTerm);
         globalApp = null;
@@ -106,7 +106,12 @@ module.exports = ({
           return;
         }
 
-        log.info(`app exited with code ${code}, waiting for change to restart it`);
+        if (code) {
+          log.info(`app exited with code ${code}, waiting for change to restart it`);
+        }
+        else {
+          log.info(`app exited due to signal (${signal}), waiting for change to restart it`);
+        }
       });
 
       process.once('SIGTERM', onTerm);
